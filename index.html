@@ -77,134 +77,48 @@
     }
 
     .splash-inner {
-      width: min(980px, 100%);
+      width: min(1180px, 100%);
       margin: auto 0;
       display: grid;
-      grid-template-columns: minmax(260px, 0.9fr) minmax(280px, 1.1fr);
+      grid-template-columns: minmax(320px, 1fr) minmax(300px, 0.92fr);
       align-items: center;
-      gap: clamp(28px, 6vw, 72px);
+      gap: clamp(28px, 5vw, 64px);
     }
 
     .guide-portrait {
       position: relative;
-      width: min(320px, 72vw);
-      aspect-ratio: 3 / 4;
+      width: min(620px, 100%);
+      aspect-ratio: 16 / 9;
       justify-self: center;
-    }
-
-    .guide-halo {
-      position: absolute;
-      inset: 8% 5% 0;
-      border: 1px solid rgba(32, 33, 36, 0.12);
-      border-radius: 48% 48% 42% 42%;
-      background:
-        radial-gradient(circle at 50% 34%, rgba(242, 201, 76, 0.34), transparent 26%),
-        linear-gradient(180deg, #f8fbff 0%, #eef4f7 58%, #ffffff 100%);
-    }
-
-    .guide-body {
-      position: absolute;
-      left: 19%;
-      right: 19%;
-      bottom: 4%;
-      height: 43%;
+      overflow: hidden;
       border: 2px solid #202124;
-      border-bottom: 0;
-      border-radius: 46% 46% 0 0;
-      background:
-        linear-gradient(90deg, transparent 47%, rgba(255,255,255,0.9) 48%, rgba(255,255,255,0.9) 52%, transparent 53%),
-        linear-gradient(135deg, #2d6cdf 0 50%, #202124 51% 100%);
+      border-radius: 8px;
+      background: #ffffff;
+      box-shadow: 8px 8px 0 #202124;
     }
 
-    .guide-neck {
+    .title-idol-image {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .title-idol-label {
       position: absolute;
-      left: 42%;
-      right: 42%;
-      bottom: 43%;
-      height: 13%;
-      border: 2px solid #202124;
-      border-radius: 0 0 999px 999px;
-      background: #ffe3cc;
-    }
-
-    .guide-face {
-      position: absolute;
-      left: 26%;
-      right: 26%;
-      top: 23%;
-      height: 31%;
-      border: 2px solid #202124;
-      border-radius: 44% 44% 48% 48%;
-      background: #ffe3cc;
-      box-shadow: inset 0 -10px 0 rgba(219, 151, 120, 0.12);
-    }
-
-    .guide-hair {
-      position: absolute;
-      left: 21%;
-      right: 21%;
-      top: 15%;
-      height: 25%;
-      border: 2px solid #202124;
-      border-bottom: 0;
-      border-radius: 50% 50% 28% 28%;
-      background: #2b2a31;
-    }
-
-    .guide-hair::before,
-    .guide-hair::after {
-      content: "";
-      position: absolute;
-      top: 60%;
-      width: 30%;
-      height: 82%;
-      border: 2px solid #202124;
-      background: #2b2a31;
-    }
-
-    .guide-hair::before {
-      left: -4%;
-      border-radius: 72% 0 44% 72%;
-      transform: rotate(8deg);
-    }
-
-    .guide-hair::after {
-      right: -4%;
-      border-radius: 0 72% 72% 44%;
-      transform: rotate(-8deg);
-    }
-
-    .guide-eye {
-      position: absolute;
-      top: 38%;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #202124;
-    }
-
-    .guide-eye.left { left: 39%; }
-    .guide-eye.right { right: 39%; }
-
-    .guide-mouth {
-      position: absolute;
-      left: 45%;
-      top: 46%;
-      width: 18px;
-      height: 9px;
-      border-bottom: 2px solid #202124;
-      border-radius: 0 0 999px 999px;
-    }
-
-    .guide-ribbon {
-      position: absolute;
-      left: 43%;
-      right: 43%;
-      bottom: 35%;
-      height: 8%;
+      left: 14px;
+      bottom: 14px;
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 0 12px;
+      border: 1px solid rgba(32, 33, 36, 0.42);
       border-radius: 999px;
-      background: #f2c94c;
-      border: 2px solid #202124;
+      background: rgba(255, 255, 255, 0.88);
+      color: #202124;
+      font-size: 13px;
+      font-weight: 850;
+      backdrop-filter: blur(8px);
     }
 
     .splash-copy {
@@ -384,21 +298,28 @@
 
     .login-note-label {
       display: grid;
-      gap: 6px;
-      color: #3d4650;
-      font-size: 12px;
+      gap: 8px;
+      color: #202124;
+      font-size: 14px;
       font-weight: 800;
     }
 
+    .diary-help {
+      color: #667080;
+      font-size: 12px;
+      font-weight: 650;
+      line-height: 1.45;
+    }
+
     .login-note {
-      min-height: 62px;
+      min-height: 104px;
       resize: vertical;
-      padding: 8px 10px;
-      border: 1px solid #c8d0d8;
+      padding: 10px 12px;
+      border: 2px solid #202124;
       border-radius: 8px;
       background: #ffffff;
       color: #202124;
-      font-size: 13px;
+      font-size: 14px;
       line-height: 1.45;
     }
 
@@ -520,6 +441,26 @@
     .segmented button:hover,
     .switch-row button:hover {
       border-color: #9e927a;
+    }
+
+    .side-return-row {
+      display: grid;
+    }
+
+    .side-action-button {
+      min-height: 40px;
+      border: 1px solid #202124;
+      border-radius: 8px;
+      background: #f2c94c;
+      color: #202124;
+      font-weight: 850;
+      cursor: pointer;
+      box-shadow: 3px 3px 0 #202124;
+    }
+
+    .side-action-button:hover {
+      transform: translate(1px, 1px);
+      box-shadow: 2px 2px 0 #202124;
     }
 
     .legend {
@@ -1030,7 +971,7 @@
       }
 
       .guide-portrait {
-        width: min(230px, 62vw);
+        width: min(620px, 100%);
       }
 
       .start-button {
@@ -1086,19 +1027,12 @@
 <body class="title-active">
   <section id="splash" class="splash" aria-label="title screen">
     <div class="splash-inner">
-      <div class="guide-portrait" aria-hidden="true">
-        <div class="guide-halo"></div>
-        <div class="guide-body"></div>
-        <div class="guide-neck"></div>
-        <div class="guide-face"></div>
-        <div class="guide-hair"></div>
-        <div class="guide-eye left"></div>
-        <div class="guide-eye right"></div>
-        <div class="guide-mouth"></div>
-        <div class="guide-ribbon"></div>
+      <div class="guide-portrait">
+        <img id="titleIdolImage" class="title-idol-image" src="assets/title-idols/lesson-silver.png" alt="銀髪スレンダー清楚系の女性アイドルがレッスンしているタイトルイラスト" />
+        <div class="title-idol-label"><span id="titleIdolType">銀髪スレンダー清楚系</span></div>
       </div>
       <div class="splash-copy">
-        <p class="splash-kicker">ひろが出迎えるタイトル</p>
+        <p class="splash-kicker">本日のレッスン案内アイドル</p>
         <h1>NV中心 DFTモデル解析ビューア</h1>
         <p class="splash-message">おつかれさま。スタートを押したら、ダイヤモンド中の欠陥再構成をいっしょに見ていきます。</p>
         <button id="startViewerBtn" class="start-button" type="button">スタート</button>
@@ -1117,8 +1051,9 @@
           </div>
           <div id="loginCalendar" class="login-calendar"></div>
           <label class="login-note-label" for="dailyNote">
-            <span id="dailyNoteLabel">今日やったこと</span>
-            <textarea id="dailyNote" class="login-note" placeholder="例: V1/V2を最近接配置に直した。"></textarea>
+            <span id="dailyNoteLabel">今日のレッスン日誌</span>
+            <span class="diary-help">選んだ日の作業メモを書けます。スタンプと一緒に共有URLへ入ります。</span>
+            <textarea id="dailyNote" class="login-note" placeholder="例: 2D図でV1/V2を隣接配置に直した。13 eV線の位置を確認した。"></textarea>
           </label>
           <div class="login-actions">
             <button id="shareCalendarBtn" class="share-button" type="button">共有URLをコピー</button>
@@ -1138,6 +1073,7 @@
           <p id="subtitle">入力構造を読み込み中</p>
         </div>
         <div class="toolstrip" aria-label="view controls">
+          <button id="backTitleBtn" class="icon-button" type="button" title="タイトルへ戻る" aria-label="タイトルへ戻る">⌂</button>
           <button id="playBtn" class="icon-button" type="button" title="経路を再生" aria-label="経路を再生">▶</button>
           <button id="resetViewBtn" class="icon-button" type="button" title="視点を戻す" aria-label="視点を戻す">⟳</button>
         </div>
@@ -1155,6 +1091,9 @@
 
     <aside class="sidebar">
       <div class="side-inner">
+        <div class="side-return-row">
+          <button id="backTitleSideBtn" class="side-action-button" type="button">タイトルへ戻る</button>
+        </div>
         <section>
           <h2>モデル</h2>
           <div class="scenario-tabs">
@@ -2975,6 +2914,48 @@ low-E surface model: Geh(z) = G0 exp(-z/lambda_e)</code>
       });
     }
 
+    const TITLE_IDOLS = [
+      {
+        label: '銀髪スレンダー清楚系',
+        src: 'assets/title-idols/lesson-silver.png',
+      },
+      {
+        label: '元気妹系',
+        src: 'assets/title-idols/lesson-energetic.png',
+      },
+      {
+        label: 'お嬢様系',
+        src: 'assets/title-idols/lesson-lady.png',
+      },
+    ];
+
+    function chooseTitleIdol() {
+      const idol = TITLE_IDOLS[Math.floor(Math.random() * TITLE_IDOLS.length)];
+      const image = document.getElementById('titleIdolImage');
+      const label = document.getElementById('titleIdolType');
+      if (image) {
+        image.src = idol.src;
+        image.alt = `${idol.label}の女性アイドルがレッスンしているタイトルイラスト`;
+      }
+      if (label) label.textContent = idol.label;
+    }
+
+    function startViewer() {
+      document.body.classList.remove('title-active');
+      document.body.classList.add('viewer-started');
+      resize();
+      canvas.focus();
+    }
+
+    function showTitleScreen() {
+      chooseTitleIdol();
+      document.body.classList.add('title-active');
+      document.body.classList.remove('viewer-started');
+      const splash = document.getElementById('splash');
+      if (splash) splash.scrollTop = 0;
+      renderLoginCalendar();
+    }
+
     const LOGIN_STORE_KEY = 'nvDftLoginCalendar.v1';
     const LOGIN_HASH_PREFIX = 'login=';
     let loginData = { entries: {} };
@@ -3067,7 +3048,7 @@ low-E surface model: Geh(z) = G0 exp(-z/lambda_e)</code>
       selectedLoginDate = key;
       const entry = loginData.entries[key] || { stamped: false, note: '' };
       document.getElementById('dailyNote').value = entry.note || '';
-      document.getElementById('dailyNoteLabel').textContent = `${key} にやったこと`;
+      document.getElementById('dailyNoteLabel').textContent = `${key} のレッスン日誌`;
       renderLoginCalendar();
     }
 
@@ -3131,14 +3112,12 @@ low-E surface model: Geh(z) = G0 exp(-z/lambda_e)</code>
     }
 
     window.addEventListener('resize', resize);
-    document.getElementById('startViewerBtn').addEventListener('click', () => {
-      document.body.classList.remove('title-active');
-      document.body.classList.add('viewer-started');
-      resize();
-      canvas.focus();
-    });
+    document.getElementById('startViewerBtn').addEventListener('click', startViewer);
+    document.getElementById('backTitleBtn').addEventListener('click', showTitleScreen);
+    document.getElementById('backTitleSideBtn').addEventListener('click', showTitleScreen);
     updateBeamUI();
     updateDepthTable();
+    chooseTitleIdol();
     initLoginCalendar();
     resize();
     animate();
