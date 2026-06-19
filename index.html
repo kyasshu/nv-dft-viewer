@@ -50,6 +50,214 @@
       overflow: hidden;
     }
 
+    body.title-active .app {
+      visibility: hidden;
+    }
+
+    .splash {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+      color: #16191d;
+      background:
+        radial-gradient(circle at 18% 18%, rgba(242, 201, 76, 0.24), transparent 34%),
+        radial-gradient(circle at 84% 78%, rgba(45, 108, 223, 0.14), transparent 36%),
+        linear-gradient(180deg, #ffffff 0%, #f4f7f9 100%);
+      transition: opacity 220ms ease, visibility 220ms ease;
+    }
+
+    body.viewer-started .splash {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .splash-inner {
+      width: min(980px, 100%);
+      display: grid;
+      grid-template-columns: minmax(260px, 0.9fr) minmax(280px, 1.1fr);
+      align-items: center;
+      gap: clamp(28px, 6vw, 72px);
+    }
+
+    .guide-portrait {
+      position: relative;
+      width: min(320px, 72vw);
+      aspect-ratio: 3 / 4;
+      justify-self: center;
+    }
+
+    .guide-halo {
+      position: absolute;
+      inset: 8% 5% 0;
+      border: 1px solid rgba(32, 33, 36, 0.12);
+      border-radius: 48% 48% 42% 42%;
+      background:
+        radial-gradient(circle at 50% 34%, rgba(242, 201, 76, 0.34), transparent 26%),
+        linear-gradient(180deg, #f8fbff 0%, #eef4f7 58%, #ffffff 100%);
+    }
+
+    .guide-body {
+      position: absolute;
+      left: 19%;
+      right: 19%;
+      bottom: 4%;
+      height: 43%;
+      border: 2px solid #202124;
+      border-bottom: 0;
+      border-radius: 46% 46% 0 0;
+      background:
+        linear-gradient(90deg, transparent 47%, rgba(255,255,255,0.9) 48%, rgba(255,255,255,0.9) 52%, transparent 53%),
+        linear-gradient(135deg, #2d6cdf 0 50%, #202124 51% 100%);
+    }
+
+    .guide-neck {
+      position: absolute;
+      left: 42%;
+      right: 42%;
+      bottom: 43%;
+      height: 13%;
+      border: 2px solid #202124;
+      border-radius: 0 0 999px 999px;
+      background: #ffe3cc;
+    }
+
+    .guide-face {
+      position: absolute;
+      left: 26%;
+      right: 26%;
+      top: 23%;
+      height: 31%;
+      border: 2px solid #202124;
+      border-radius: 44% 44% 48% 48%;
+      background: #ffe3cc;
+      box-shadow: inset 0 -10px 0 rgba(219, 151, 120, 0.12);
+    }
+
+    .guide-hair {
+      position: absolute;
+      left: 21%;
+      right: 21%;
+      top: 15%;
+      height: 25%;
+      border: 2px solid #202124;
+      border-bottom: 0;
+      border-radius: 50% 50% 28% 28%;
+      background: #2b2a31;
+    }
+
+    .guide-hair::before,
+    .guide-hair::after {
+      content: "";
+      position: absolute;
+      top: 60%;
+      width: 30%;
+      height: 82%;
+      border: 2px solid #202124;
+      background: #2b2a31;
+    }
+
+    .guide-hair::before {
+      left: -4%;
+      border-radius: 72% 0 44% 72%;
+      transform: rotate(8deg);
+    }
+
+    .guide-hair::after {
+      right: -4%;
+      border-radius: 0 72% 72% 44%;
+      transform: rotate(-8deg);
+    }
+
+    .guide-eye {
+      position: absolute;
+      top: 38%;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #202124;
+    }
+
+    .guide-eye.left { left: 39%; }
+    .guide-eye.right { right: 39%; }
+
+    .guide-mouth {
+      position: absolute;
+      left: 45%;
+      top: 46%;
+      width: 18px;
+      height: 9px;
+      border-bottom: 2px solid #202124;
+      border-radius: 0 0 999px 999px;
+    }
+
+    .guide-ribbon {
+      position: absolute;
+      left: 43%;
+      right: 43%;
+      bottom: 35%;
+      height: 8%;
+      border-radius: 999px;
+      background: #f2c94c;
+      border: 2px solid #202124;
+    }
+
+    .splash-copy {
+      display: grid;
+      gap: 18px;
+      align-content: center;
+    }
+
+    .splash-kicker {
+      margin: 0;
+      color: #51606d;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .splash-copy h1 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 64px);
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    .splash-message {
+      margin: 0;
+      width: min(560px, 100%);
+      color: #3d4650;
+      font-size: clamp(16px, 2vw, 20px);
+      line-height: 1.65;
+    }
+
+    .start-button {
+      width: fit-content;
+      min-width: 190px;
+      min-height: 52px;
+      padding: 0 22px;
+      border: 2px solid #202124;
+      border-radius: 8px;
+      background: #f2c94c;
+      color: #202124;
+      font-weight: 850;
+      cursor: pointer;
+      box-shadow: 5px 5px 0 #202124;
+    }
+
+    .start-button:hover {
+      transform: translate(1px, 1px);
+      box-shadow: 4px 4px 0 #202124;
+    }
+
+    .start-button:active {
+      transform: translate(4px, 4px);
+      box-shadow: 1px 1px 0 #202124;
+    }
+
     .stage {
       position: relative;
       min-width: 0;
@@ -646,11 +854,30 @@
         overflow: auto;
       }
 
+      body.title-active {
+        height: 100dvh;
+        overflow: hidden;
+      }
+
       .app {
         grid-template-columns: 1fr;
         height: auto;
         min-height: 100vh;
         overflow: visible;
+      }
+
+      .splash-inner {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        text-align: center;
+      }
+
+      .guide-portrait {
+        width: min(230px, 62vw);
+      }
+
+      .start-button {
+        justify-self: center;
       }
 
       .stage {
@@ -699,7 +926,28 @@
     }
   </style>
 </head>
-<body>
+<body class="title-active">
+  <section id="splash" class="splash" aria-label="title screen">
+    <div class="splash-inner">
+      <div class="guide-portrait" aria-hidden="true">
+        <div class="guide-halo"></div>
+        <div class="guide-body"></div>
+        <div class="guide-neck"></div>
+        <div class="guide-face"></div>
+        <div class="guide-hair"></div>
+        <div class="guide-eye left"></div>
+        <div class="guide-eye right"></div>
+        <div class="guide-mouth"></div>
+        <div class="guide-ribbon"></div>
+      </div>
+      <div class="splash-copy">
+        <p class="splash-kicker">ひろが出迎えるタイトル</p>
+        <h1>NV中心 DFTモデル解析ビューア</h1>
+        <p class="splash-message">おつかれさま。スタートを押したら、ダイヤモンド中の欠陥再構成をいっしょに見ていきます。</p>
+        <button id="startViewerBtn" class="start-button" type="button">スタート</button>
+      </div>
+    </div>
+  </section>
   <main class="app">
     <div class="stage" aria-label="3D defect model">
       <canvas id="scene"></canvas>
@@ -2548,6 +2796,12 @@ low-E surface model: Geh(z) = G0 exp(-z/lambda_e)</code>
     }
 
     window.addEventListener('resize', resize);
+    document.getElementById('startViewerBtn').addEventListener('click', () => {
+      document.body.classList.remove('title-active');
+      document.body.classList.add('viewer-started');
+      resize();
+      canvas.focus();
+    });
     updateBeamUI();
     updateDepthTable();
     resize();
