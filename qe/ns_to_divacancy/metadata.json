@@ -1,0 +1,62 @@
+{
+  "scenario": "ns_to_divacancy",
+  "meaning": "A substitutional nitrogen sits next to two adjacent vacancies. The nitrogen moves into the nearer vacancy, leaving its original substitutional site vacant.",
+  "nitrogen_key": [
+    1,
+    1,
+    1,
+    0
+  ],
+  "first_vacancy_key": [
+    1,
+    1,
+    1,
+    4
+  ],
+  "second_vacancy_key": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "moving_n_initial_position_angstrom": [
+    3.567,
+    3.567,
+    3.567
+  ],
+  "moving_n_final_position_angstrom": [
+    4.45875,
+    4.45875,
+    4.45875
+  ],
+  "vacancy_positions_initial_angstrom": [
+    [
+      4.45875,
+      4.45875,
+      4.45875
+    ],
+    [
+      3.567,
+      5.3505,
+      5.3505
+    ]
+  ],
+  "vacancy_positions_final_angstrom": [
+    [
+      3.567,
+      3.567,
+      3.567
+    ],
+    [
+      3.567,
+      5.3505,
+      5.3505
+    ]
+  ],
+  "warning": "This is a structural pathway hypothesis for visualization and NEB setup. It does not mean the nitrogen is directly pushed by the electron beam.",
+  "supercell": "3x3x3",
+  "cell_length_angstrom": 10.701,
+  "charge": 0,
+  "nat": 214,
+  "quantum_espresso_note": "Relax endpoints first; then update NEB FIRST_IMAGE/LAST_IMAGE with relaxed coordinates before final production runs."
+}

@@ -1,0 +1,37 @@
+{
+  "scenario": "vacancy_hop_to_nv",
+  "meaning": "A neighboring carbon jumps into a vacancy, so the vacancy moves next to substitutional nitrogen and creates an NV geometry.",
+  "nitrogen_key": [
+    1,
+    1,
+    1,
+    0
+  ],
+  "initial_vacancy_key": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "final_vacancy_key_next_to_N": [
+    1,
+    1,
+    1,
+    4
+  ],
+  "migrating_carbon_initial_position_angstrom": [
+    4.45875,
+    4.45875,
+    4.45875
+  ],
+  "migrating_carbon_final_position_angstrom": [
+    3.567,
+    5.3505,
+    5.3505
+  ],
+  "supercell": "3x3x3",
+  "cell_length_angstrom": 10.701,
+  "charge": 0,
+  "nat": 215,
+  "quantum_espresso_note": "Relax endpoints first; then update NEB FIRST_IMAGE/LAST_IMAGE with relaxed coordinates before final production runs."
+}

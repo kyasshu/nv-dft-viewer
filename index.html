@@ -1,0 +1,2558 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NV center DFT model viewer</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #202124;
+      --muted: #5f6368;
+      --panel: #faf8f2;
+      --panel-2: #ffffff;
+      --line: #d8d2c4;
+      --scene: #171615;
+      --carbon: #aab0b8;
+      --nitrogen: #2d6cdf;
+      --vacancy: #d4483f;
+      --electron: #f2c94c;
+      --ok: #247a52;
+      --warn: #b25512;
+      --shadow: rgba(0, 0, 0, 0.18);
+      font-family: "Segoe UI", "Yu Gothic UI", "Hiragino Sans", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      height: 100dvh;
+      min-height: 0;
+      overflow: hidden;
+      color: var(--ink);
+      background: var(--panel);
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) clamp(320px, 32vw, 390px);
+      height: 100dvh;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .stage {
+      position: relative;
+      min-width: 0;
+      min-height: 0;
+      background: var(--scene);
+    }
+
+    #scene {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      transition: opacity 180ms ease;
+    }
+
+    #flatScene {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: block;
+      opacity: 0;
+      pointer-events: none;
+      background: #f7fbfb;
+      transition: opacity 180ms ease;
+    }
+
+    #flatScene.show {
+      opacity: 1;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
+    .stage.flat-2d #scene {
+      opacity: 0;
+    }
+
+    .stage.flat-2d .topbar,
+    .stage.flat-2d .legend,
+    .stage.flat-2d .flat-badge {
+      display: none;
+    }
+
+    .topbar {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+      pointer-events: none;
+    }
+
+    .title {
+      padding: 8px 12px;
+      background: rgba(250, 248, 242, 0.92);
+      border: 1px solid rgba(216, 210, 196, 0.8);
+      border-radius: 8px;
+      box-shadow: 0 8px 24px var(--shadow);
+      pointer-events: auto;
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    .title p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .toolstrip {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+      pointer-events: auto;
+    }
+
+    .icon-button {
+      width: 38px;
+      height: 38px;
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid rgba(216, 210, 196, 0.9);
+      border-radius: 8px;
+      background: rgba(250, 248, 242, 0.92);
+      color: var(--ink);
+      box-shadow: 0 8px 24px var(--shadow);
+      cursor: pointer;
+    }
+
+    .icon-button:hover,
+    .segmented button:hover,
+    .switch-row button:hover {
+      border-color: #9e927a;
+    }
+
+    .legend {
+      position: absolute;
+      left: 14px;
+      bottom: 14px;
+      z-index: 4;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: rgba(250, 248, 242, 0.92);
+      border: 1px solid rgba(216, 210, 196, 0.82);
+      box-shadow: 0 8px 24px var(--shadow);
+      font-size: 12px;
+      color: var(--muted);
+      max-width: calc(100% - 28px);
+    }
+
+    .key {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      display: inline-block;
+      background: currentColor;
+    }
+
+    .dot.carbon { color: var(--carbon); }
+    .dot.nitrogen { color: var(--nitrogen); }
+    .dot.vacancy { color: var(--vacancy); }
+    .dot.electron { color: var(--electron); }
+
+    .concept-badge {
+      position: absolute;
+      top: 86px;
+      left: 14px;
+      z-index: 4;
+      max-width: min(520px, calc(100% - 28px));
+      padding: 9px 11px;
+      border: 1px solid rgba(121, 232, 255, 0.45);
+      border-radius: 8px;
+      background: rgba(18, 36, 42, 0.74);
+      color: #e7fbff;
+      box-shadow: 0 8px 24px var(--shadow);
+      font-size: 13px;
+      line-height: 1.45;
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity 160ms ease, transform 160ms ease;
+    }
+
+    .concept-badge.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .flat-badge {
+      position: absolute;
+      top: 86px;
+      left: 14px;
+      z-index: 4;
+      max-width: min(520px, calc(100% - 28px));
+      padding: 9px 11px;
+      border: 1px solid rgba(35, 127, 145, 0.35);
+      border-radius: 8px;
+      background: rgba(250, 248, 242, 0.94);
+      color: #154c57;
+      box-shadow: 0 8px 24px var(--shadow);
+      font-size: 13px;
+      line-height: 1.45;
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity 160ms ease, transform 160ms ease;
+    }
+
+    .flat-badge.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .sidebar {
+      min-width: 0;
+      min-height: 0;
+      height: 100%;
+      overflow: auto;
+      border-left: 1px solid var(--line);
+      background: linear-gradient(180deg, #faf8f2 0%, #ffffff 48%, #f5f8f5 100%);
+    }
+
+    .side-inner {
+      display: grid;
+      gap: 18px;
+      padding: 18px;
+      min-width: 0;
+    }
+
+    section {
+      min-width: 0;
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+    }
+
+    section:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 15px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .scenario-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .scenario-tabs button,
+    .segmented button,
+    .switch-row button {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-2);
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .scenario-tabs button {
+      padding: 8px 10px;
+      text-align: left;
+      font-size: 13px;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    button.active {
+      border-color: #2d6cdf;
+      background: #edf4ff;
+      color: #143f8a;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .metric {
+      min-height: 58px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.74);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.2;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 14px;
+      line-height: 1.2;
+      font-weight: 650;
+      overflow-wrap: anywhere;
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .slider-row {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) 44px;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .slider-row input[type="range"] {
+      width: 100%;
+      accent-color: #2d6cdf;
+    }
+
+    .slider-row output {
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .switch-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .switch-row button {
+      font-size: 12px;
+      min-height: 34px;
+    }
+
+    .switch-row button[aria-pressed="true"] {
+      background: #ecf7ef;
+      border-color: #74a87d;
+      color: #195a36;
+    }
+
+    .beam-controls {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 10px;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .beam-control {
+      display: grid;
+      grid-template-columns: 82px minmax(0, 1fr) 76px;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .beam-control label {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .beam-control input {
+      width: 100%;
+      accent-color: #237f91;
+    }
+
+    .beam-control output {
+      text-align: right;
+      font-size: 12px;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .beam-depth {
+      margin: -2px 0 0;
+      color: #2d5a62;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .depth-readouts {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .depth-readout {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdfa;
+      padding: 8px 10px;
+      min-width: 0;
+    }
+
+    .depth-readout span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .depth-readout strong {
+      display: block;
+      margin-top: 3px;
+      color: var(--ink);
+      font-size: 15px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .note {
+      border-left: 4px solid var(--warn);
+      padding: 9px 10px;
+      background: #fff8ed;
+      border-radius: 0 8px 8px 0;
+      color: #5a3214;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .note.ok {
+      border-left-color: var(--ok);
+      background: #eef8f2;
+      color: #184c34;
+    }
+
+    .note.concept {
+      border-left-color: #237f91;
+      background: #edfaff;
+      color: #154c57;
+    }
+
+    #energyCanvas {
+      width: 100%;
+      height: 164px;
+      display: block;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdfa;
+    }
+
+    #crossSectionCanvas {
+      width: 100%;
+      height: 168px;
+      display: block;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #101514;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 86px;
+      resize: vertical;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--ink);
+      font-family: "Cascadia Mono", Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .mini-table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+      font-size: 12px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .mini-table th,
+    .mini-table td {
+      border-bottom: 1px solid var(--line);
+      padding: 7px 8px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      overflow-wrap: anywhere;
+    }
+
+    .mini-table th:first-child,
+    .mini-table td:first-child {
+      text-align: left;
+    }
+
+    .mini-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .mechanism-grid {
+      display: grid;
+      gap: 9px;
+    }
+
+    .mechanism-step {
+      padding: 10px;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.76);
+    }
+
+    .mechanism-step strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .formula {
+      display: block;
+      width: 100%;
+      margin: 6px 0;
+      padding: 8px;
+      overflow-x: auto;
+      border: 1px solid #d8e0df;
+      border-radius: 8px;
+      background: #f7fbfb;
+      color: #153a42;
+      font-family: "Cascadia Mono", Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.45;
+      white-space: pre;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 7px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 0 7px;
+      border: 1px solid #cfe0dd;
+      border-radius: 999px;
+      background: #f5fbf8;
+      color: #285a4c;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .mechanism-note {
+      margin-top: 10px;
+    }
+
+    .footer-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: #143f8a;
+      background: #edf4ff;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .error {
+      position: absolute;
+      inset: 16px;
+      z-index: 6;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(23, 22, 21, 0.88);
+      color: #fff4e3;
+      text-align: center;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .error.show {
+      display: flex;
+    }
+
+    @media (max-width: 1080px) {
+      body {
+        height: auto;
+        min-height: 100dvh;
+        overflow: auto;
+      }
+
+      .app {
+        grid-template-columns: 1fr;
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+      }
+
+      .stage {
+        height: 58vh;
+        min-height: 430px;
+      }
+
+      .sidebar {
+        height: auto;
+        overflow: visible;
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .title h1 {
+        font-size: 16px;
+      }
+
+      .concept-badge {
+        top: 84px;
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .toolstrip {
+        flex-direction: column;
+      }
+
+      .stage {
+        min-height: 390px;
+      }
+
+      .side-inner {
+        padding: 14px;
+      }
+
+      .status-grid,
+      .scenario-tabs {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="stage" aria-label="3D defect model">
+      <canvas id="scene"></canvas>
+      <canvas id="flatScene" aria-label="2D diamond cross-section animation"></canvas>
+      <div class="topbar">
+        <div class="title">
+          <h1>NV中心 DFTモデル解析ビューア</h1>
+          <p id="subtitle">入力構造を読み込み中</p>
+        </div>
+        <div class="toolstrip" aria-label="view controls">
+          <button id="playBtn" class="icon-button" type="button" title="経路を再生" aria-label="経路を再生">▶</button>
+          <button id="resetViewBtn" class="icon-button" type="button" title="視点を戻す" aria-label="視点を戻す">⟳</button>
+        </div>
+      </div>
+      <div class="legend" aria-label="atom legend">
+        <span class="key"><span class="dot carbon"></span>C</span>
+        <span class="key"><span class="dot nitrogen"></span>N</span>
+        <span class="key"><span class="dot vacancy"></span>空孔=抜けたCサイト</span>
+        <span class="key"><span class="dot electron"></span>電子</span>
+      </div>
+      <div id="conceptBadge" class="concept-badge">概念図: 電子の雨がふわーと入り、局所励起で障壁が下がったように欠陥がえいっと再配置するイメージです。</div>
+      <div id="flat2dBadge" class="flat-badge">完全2D: ダイヤモンド立方構造のCサイトからV1/V2を抜き、N_iがV1へ再結合してN_sになり、V2が隣に残る概念アニメです。</div>
+      <div id="loadError" class="error"></div>
+    </div>
+
+    <aside class="sidebar">
+      <div class="side-inner">
+        <section>
+          <h2>モデル</h2>
+          <div class="scenario-tabs">
+            <button id="scenarioNi" type="button" data-scenario="ni_to_vc">
+              N_i + V再結合
+            </button>
+            <button id="scenarioVacancy" type="button" data-scenario="vacancy_hop_to_nv">
+              空孔ホップ → NV
+            </button>
+            <button id="scenarioDivacancy" type="button" data-scenario="ns_to_divacancy">
+              置換N → V2
+            </button>
+          </div>
+        </section>
+
+        <section>
+          <h2>状態</h2>
+          <div class="segmented">
+            <button type="button" data-state="0">初期</button>
+            <button type="button" data-state="0.5">経路</button>
+            <button type="button" data-state="1">終状態</button>
+          </div>
+          <div class="slider-row">
+            <button id="stepBackBtn" class="icon-button" type="button" title="少し戻す" aria-label="少し戻す">‹</button>
+            <input id="pathSlider" type="range" min="0" max="100" value="0" />
+            <output id="pathOut" for="pathSlider">0%</output>
+          </div>
+          <div class="switch-row">
+            <button id="toggleBonds" type="button" aria-pressed="true">結合</button>
+            <button id="toggleCell" type="button" aria-pressed="true">セル</button>
+            <button id="toggleCarbon" type="button" aria-pressed="true">C表示</button>
+          </div>
+          <div class="switch-row">
+            <button id="toggleVacancy" type="button" aria-pressed="true">空孔</button>
+            <button id="togglePath" type="button" aria-pressed="true">経路</button>
+            <button id="toggleConcept" type="button" aria-pressed="false">電子の雨</button>
+          </div>
+          <div class="switch-row">
+            <button id="restartConcept" type="button">えいっ再生</button>
+            <button id="stepForwardBtn" type="button">進める</button>
+          </div>
+          <div class="switch-row">
+            <button id="toggleFlat2d" type="button" aria-pressed="false">完全2D</button>
+            <button id="restartFlat2d" type="button">2D再生</button>
+          </div>
+          <p class="beam-depth">原子表示はC、N、空孔だけです。座標が変わるCも灰色のCとして表示し、存在しない原子は追加しません。</p>
+          <div class="beam-controls" aria-label="electron beam controls">
+            <div class="beam-control">
+              <label for="energySlider">エネルギー</label>
+              <input id="energySlider" type="range" min="0" max="100" value="28" />
+              <output id="energyOut" for="energySlider">100 eV</output>
+            </div>
+            <div class="beam-control">
+              <label for="amountSlider">電子の量</label>
+              <input id="amountSlider" type="range" min="10" max="100" value="45" />
+              <output id="amountOut" for="amountSlider">1.0x</output>
+            </div>
+            <p id="beamDepthText" class="beam-depth">低エネルギー: 表面近くで止まりやすい</p>
+          </div>
+        </section>
+
+        <section>
+          <h2>現在の読み取り</h2>
+          <div class="status-grid">
+            <div class="metric">
+              <span>DFT状態</span>
+              <strong id="calcStatus">入力生成済み</strong>
+            </div>
+            <div class="metric">
+              <span>原子数</span>
+              <strong id="atomCount">-</strong>
+            </div>
+            <div class="metric">
+              <span>空孔数</span>
+              <strong id="vacancyCount">-</strong>
+            </div>
+            <div class="metric">
+              <span>セル長</span>
+              <strong id="cellLength">-</strong>
+            </div>
+            <div class="metric">
+              <span>電荷</span>
+              <strong id="chargeState">-</strong>
+            </div>
+          </div>
+          <p id="stateText"></p>
+          <div id="interpretation" class="note"></div>
+        </section>
+
+        <section>
+          <h2>計算式まとめ</h2>
+          <div class="mechanism-grid">
+            <div class="mechanism-step">
+              <strong>構造の途中表示</strong>
+              <p>初期構造と終状態を線形補間して、途中の見取り図を描きます。NEBの最適経路そのものではありません。</p>
+              <code class="formula">Ri(s) = (1 - s) Ri_initial + s Ri_final
+0 <= s <= 1</code>
+            </div>
+            <div class="mechanism-step">
+              <strong>電子の最大エネルギー移行</strong>
+              <p>knock-onで原子を直接弾けるかを判定するための見積もりです。</p>
+              <code class="formula">Tmax = 2 Ee (Ee + 2 me c^2) / (M c^2)
+low energy approx: Tmax ~= (4 me / M) Ee
+if Tmax < Ed: Gv_knock-on = 0</code>
+            </div>
+            <div class="mechanism-step">
+              <strong>電子の雨モード</strong>
+              <p>スライダー値から概念的な入射電子エネルギー、減衰長、電子量を作ります。2D断面では13 eVまで落ちる深さを線で示します。</p>
+              <code class="formula">Ee = 10^[log10(10 eV) + x {log10(30000 eV)-log10(10 eV)}]
+reach = smoothstep((log10(Ee)-log10(30))/(log10(30000)-log10(30)))
+lambda_vis = 3.2 A + 14.0 A * reach
+E(z) = Ee exp(-z/lambda_vis)
+z_13 = lambda_vis ln(Ee / 13 eV)
+amount = slider_amount / 45</code>
+            </div>
+            <div class="mechanism-step">
+              <strong>NEB障壁の読み取り</strong>
+              <p>NEB計算後に得た各画像のエネルギーから、初期状態基準の最大値を障壁として読みます。</p>
+              <code class="formula">Delta Ei = Ei - E_initial
+Ea = max(Delta Ei)</code>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>2D断面: 侵入深さ表</h2>
+          <div class="beam-controls" aria-label="cross-section depth readout">
+            <div class="depth-readouts">
+              <div class="depth-readout">
+                <span>入射電子</span>
+                <strong id="depthEnergyOut">-</strong>
+              </div>
+              <div class="depth-readout">
+                <span>基準線</span>
+                <strong id="depthThresholdOut">13 eV</strong>
+              </div>
+            </div>
+            <p id="depthSummaryText" class="beam-depth">13 eVまで減る深さを計算中</p>
+          </div>
+          <canvas id="crossSectionCanvas" width="680" height="280"></canvas>
+          <table class="mini-table" aria-label="penetration depth table">
+            <thead>
+              <tr><th>深さ z</th><th>残りE</th><th>I/I0</th><th>判定</th></tr>
+            </thead>
+            <tbody id="depthTableBody"></tbody>
+          </table>
+          <p class="beam-depth">これは2D断面の概念表です。メインのエネルギースライダーと連動し、深さ方向で残りエネルギーが13 eVまで下がる位置を縦線で示します。</p>
+        </section>
+
+        <section>
+          <h2>NEB障壁メモ</h2>
+          <canvas id="energyCanvas" width="680" height="328"></canvas>
+          <p id="barrierText"></p>
+          <textarea id="energyInput" spellcheck="false" aria-label="NEB energy input" placeholder="NEB結果が出たら、相対エネルギー(eV)を1行ずつ貼る&#10;例:&#10;0.00&#10;0.42&#10;1.10&#10;1.38&#10;0.86&#10;0.25&#10;-0.08"></textarea>
+        </section>
+
+        <section>
+          <h2>電子照射の目安</h2>
+          <table class="mini-table" aria-label="electron transfer table">
+            <thead>
+              <tr><th>電子</th><th>Cへ最大</th><th>Nへ最大</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>10 keV</td><td>1.84 eV</td><td>1.58 eV</td></tr>
+              <tr><td>30 keV</td><td>5.64 eV</td><td>4.84 eV</td></tr>
+              <tr><td>100 keV</td><td>20.06 eV</td><td>17.20 eV</td></tr>
+              <tr><td>200 keV</td><td>43.69 eV</td><td>37.46 eV</td></tr>
+            </tbody>
+          </table>
+          <p>30 keV以下では直接ノックオンより、電子励起や電荷状態変化でNEB障壁が下がるかが中心論点になります。</p>
+        </section>
+
+        <section>
+          <h2>3段階モデル</h2>
+          <div class="mechanism-grid">
+            <div class="mechanism-step">
+              <strong>Step 1: 直接空孔生成を切る</strong>
+              <p>低エネルギー電子ではCを直接弾き出すエネルギーが足りないので、空孔生成項は0にします。</p>
+              <code class="formula">Tmax ~= (4 me / MC) Ee
+if Tmax &lt; Ed:  Gv_knock-on = 0</code>
+              <div class="tag-row">
+                <span class="tag">knock-onなし</span>
+                <span class="tag">100 eVではさらに弱い</span>
+              </div>
+            </div>
+            <div class="mechanism-step">
+              <strong>Step 2: 電子照射の主作用を入れる</strong>
+              <p>電子は原子を押すより、非弾性散乱で電子正孔対や局所励起を作る、と扱います。</p>
+              <code class="formula">Edep = integral Se(z,E) dz
+Geh(r) = (Je / e) Se(r,E) / epsilon_eh
+low-E surface model: Geh(z) = G0 exp(-z/lambda_e)</code>
+              <div class="tag-row">
+                <span class="tag">非弾性散乱</span>
+                <span class="tag">電子正孔対</span>
+                <span class="tag">表面近傍</span>
+              </div>
+            </div>
+            <div class="mechanism-step">
+              <strong>Step 3: N-V関連複合体をNVへ再構成</strong>
+              <p>既存の準安定N-V関連欠陥が、電子励起や電荷状態変化でNV配置へ移る速度式として表します。</p>
+              <code class="formula">d[NV]/dt = eta kex Cmeta
+[NV](D) = [NV]0 + [NV]sat {1 - exp(-sigma_eff D)}</code>
+              <div class="tag-row">
+                <span class="tag">再構成</span>
+                <span class="tag">線量依存</span>
+                <span class="tag">飽和</span>
+              </div>
+            </div>
+          </div>
+          <div class="note concept mechanism-note">
+            100 eV以下への話は、この論文の直接範囲ではなく拡張モデルです。knock-onは0に置き、表面近傍のGeh、表面状態、NV0/NV-電荷変換を主項にします。
+          </div>
+        </section>
+
+        <section>
+          <h2>補助項</h2>
+          <table class="mini-table" aria-label="mechanism terms table">
+            <thead>
+              <tr><th>作用</th><th>モデル式</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>電子線加熱</td><td>kth = nu0 exp(-Ea/kBT)</td></tr>
+              <tr><td>キャリア拡散</td><td>dn/dt = Dn nabla^2 n + Geh - n/tau - Cn n ND</td></tr>
+              <tr><td>捕獲</td><td>Rcap,e = Cn n ND, Rcap,h = Cp p ND</td></tr>
+              <tr><td>電荷状態PES</td><td>Mi d2Ri/dt2 = -grad_i Uq(R)</td></tr>
+              <tr><td>NV電荷変換</td><td>d[NV-]/dt = k0m n[NV0] - km0 p[NV-] + Rform-</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h2>解説書</h2>
+          <p>詳しい読み方、計算手順、結論の書き方は同じフォルダの解説書にまとめています。</p>
+          <a class="footer-link" href="viewer_manual.md" target="_blank" rel="noopener">viewer_manual.md</a>
+        </section>
+      </div>
+    </aside>
+  </main>
+
+  <script type="module">
+    let THREE;
+    try {
+      THREE = await import('../assets/vendor/three.module.js');
+    } catch (error) {
+      THREE = await import('https://unpkg.com/three@0.160.0/build/three.module.js');
+    }
+
+    const SCENARIOS = {
+      ni_to_vc: {
+        buttonId: 'scenarioNi',
+        title: '格子間Nと空孔の再結合モデル',
+        subtitle: 'N_i + V_C → N_s。空いていた炭素格子サイトをNが占有し、置換窒素になる経路。',
+        initial: 'qe/ni_to_vc/initial.xyz',
+        final: 'qe/ni_to_vc/final.xyz',
+        metadata: 'qe/ni_to_vc/metadata.json',
+        state: [
+          '初期状態: 格子間窒素 N_i が炭素空孔 V_C の近くにある。',
+          '経路途中: N_iが空いている炭素格子サイトV_Cの方向へ動き、周囲のCが局所的に緩む。',
+          '終状態: N_iがV_Cだった炭素格子サイトを占有し、置換窒素 N_s になる。'
+        ],
+        interpretation: [
+          'このモデルは「N_iと近くのV_Cが再結合してN_sになるか」を見るものです。',
+          '空孔が1個だけなら、N_iがV_Cサイトを占有した時点でその空孔は消えるので、NV中心そのものにはなりません。',
+          '障壁が低ければN_iの再結合はありえますが、NV増加の説明には追加の空孔、または別経路が必要です。'
+        ],
+      },
+      vacancy_hop_to_nv: {
+        buttonId: 'scenarioVacancy',
+        title: '空孔がNの隣へ来てNVになるモデル',
+        subtitle: 'N_s + V_C → NV。NV形成として本命に近い空孔移動経路。',
+        initial: 'qe/vacancy_hop_to_nv/initial.xyz',
+        final: 'qe/vacancy_hop_to_nv/final.xyz',
+        metadata: 'qe/vacancy_hop_to_nv/metadata.json',
+        state: [
+          '初期状態: 置換窒素 N_s の近くに炭素空孔 V_C がある。',
+          '経路途中: 隣のCが空孔へ移動し、空孔が逆向きにホップする。',
+          '終状態: 空孔がNの隣に来て、NV幾何配置になる。'
+        ],
+        interpretation: [
+          'このモデルは観測されたNV増加を説明しやすい候補です。',
+          '低エネルギー電子が原子を直接弾くというより、電荷状態や電子励起でこの障壁が下がるかを見るのが重要です。',
+          '中性、正、負電荷状態でNEBを比較し、どの状態だけ動きやすいかを調べます。'
+        ],
+      },
+      ns_to_divacancy: {
+        buttonId: 'scenarioDivacancy',
+        title: '置換Nが隣接V1格子サイトを占有するモデル',
+        subtitle: 'N_s + V-V。Vが2個並び、置換窒素が近い空いている炭素格子サイトへ移る仮説経路。',
+        initial: 'qe/ns_to_divacancy/initial.xyz',
+        final: 'qe/ns_to_divacancy/final.xyz',
+        metadata: 'qe/ns_to_divacancy/metadata.json',
+        state: [
+          '初期状態: 置換窒素 N_s の隣に、2個の炭素空孔 V_C が並んでいる。',
+          '経路途中: Nが隣の空いている炭素格子サイトへ移り、Nの元いた場所が新しい空孔になる。',
+          '終状態: NがV1格子サイトを占有してN_sになり、もう一つの空孔V2は近くに残る。'
+        ],
+        interpretation: [
+          'このモデルは「窒素が隣接する空いている炭素格子サイトへ移り、置換型窒素として安定するか」を見るための仮説経路です。',
+          'Vが2個あるので、Nが入っても空孔構造が完全には消えず、欠陥複合体の再構成として見られます。',
+          'ただし電子がNを直接押す表示ではありません。電子励起や電荷状態変化で、この経路の障壁が下がるかをNEBで調べます。'
+        ],
+      }
+    };
+
+    const COLORS = {
+      carbon: 0xaab0b8,
+      nitrogen: 0x2d6cdf,
+      vacancy: 0xd4483f,
+      electron: 0xf2c94c,
+      burst: 0xf2c94c,
+      bond: 0xd3ccc0,
+      path: 0x52b788,
+      cell: 0xf5ead8,
+    };
+
+    const stageEl = document.querySelector('.stage');
+    const canvas = document.getElementById('scene');
+    const flatCanvas = document.getElementById('flatScene');
+    const flatCtx = flatCanvas.getContext('2d');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x171615, 1);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
+    camera.position.set(13, 11, 17);
+    camera.lookAt(0, 0, 0);
+
+    const root = new THREE.Group();
+    scene.add(root);
+
+    const atomGroup = new THREE.Group();
+    const bondGroup = new THREE.Group();
+    const helperGroup = new THREE.Group();
+    const conceptGroup = new THREE.Group();
+    root.add(bondGroup, atomGroup, helperGroup, conceptGroup);
+
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x473f36, 1.9));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    keyLight.position.set(7, 9, 10);
+    scene.add(keyLight);
+
+    const materials = {
+      C: new THREE.MeshStandardMaterial({ color: COLORS.carbon, roughness: 0.42, metalness: 0.08 }),
+      N: new THREE.MeshStandardMaterial({ color: COLORS.nitrogen, roughness: 0.38, metalness: 0.05 }),
+      dimC: new THREE.MeshStandardMaterial({ color: 0x68707a, transparent: true, opacity: 0.18, roughness: 0.65 }),
+      vacancy: new THREE.MeshBasicMaterial({ color: COLORS.vacancy, transparent: true, opacity: 0.86, wireframe: true }),
+      bond: new THREE.MeshBasicMaterial({ color: COLORS.bond, transparent: true, opacity: 0.34 }),
+      path: new THREE.LineBasicMaterial({ color: COLORS.path, linewidth: 2 }),
+      cell: new THREE.LineBasicMaterial({ color: COLORS.cell, transparent: true, opacity: 0.34 }),
+      electron: new THREE.MeshBasicMaterial({ color: COLORS.electron, transparent: true, opacity: 0.0 }),
+      burst: new THREE.MeshBasicMaterial({ color: COLORS.burst, transparent: true, opacity: 0.0 }),
+    };
+
+    const sphereGeo = new THREE.SphereGeometry(0.16, 22, 16);
+    const nitrogenGeo = new THREE.SphereGeometry(0.26, 28, 20);
+    const vacancyGeo = new THREE.IcosahedronGeometry(0.36, 1);
+    const bondGeo = new THREE.CylinderGeometry(0.025, 0.025, 1, 10);
+    const electronGeo = new THREE.SphereGeometry(0.055, 12, 8);
+    const burstGeo = new THREE.TorusGeometry(0.58, 0.018, 8, 64);
+
+    let model = null;
+    let currentScenario = 'ni_to_vc';
+    let t = 0;
+    let playing = false;
+    let frameHandle = null;
+    let conceptMode = false;
+    let conceptStartTime = 0;
+    let conceptTimer = null;
+    let lastConceptT = -1;
+    let flat2dMode = false;
+    let flat2dStartTime = 0;
+    let flat2dStepIndex = 0;
+    let flat2dManualMode = false;
+    let atomMeshes = [];
+    let electronMeshes = [];
+    let positionChangedIndices = new Set();
+    let cellLength = 10.701;
+    let toggles = {
+      bonds: true,
+      cell: true,
+      carbon: true,
+      vacancy: true,
+      path: true,
+    };
+
+    const subtitle = document.getElementById('subtitle');
+    const pathSlider = document.getElementById('pathSlider');
+    const pathOut = document.getElementById('pathOut');
+    const playBtn = document.getElementById('playBtn');
+    const conceptBadge = document.getElementById('conceptBadge');
+    const flat2dBadge = document.getElementById('flat2dBadge');
+    const loadError = document.getElementById('loadError');
+    const energySlider = document.getElementById('energySlider');
+    const amountSlider = document.getElementById('amountSlider');
+    const energyOut = document.getElementById('energyOut');
+    const amountOut = document.getElementById('amountOut');
+    const beamDepthText = document.getElementById('beamDepthText');
+    const depthEnergyOut = document.getElementById('depthEnergyOut');
+    const depthThresholdOut = document.getElementById('depthThresholdOut');
+    const depthSummaryText = document.getElementById('depthSummaryText');
+    const depthTableBody = document.getElementById('depthTableBody');
+
+    const ENERGY_MIN_EV = 10;
+    const ENERGY_MAX_EV = 30_000;
+    const DEPTH_THRESHOLD_EV = 13;
+    const DIAMOND_LATTICE_A = 3.567;
+    const DIAMOND_BASIS = [
+      [0, 0, 0],
+      [0, 0.5, 0.5],
+      [0.5, 0, 0.5],
+      [0.5, 0.5, 0],
+      [0.25, 0.25, 0.25],
+      [0.25, 0.75, 0.75],
+      [0.75, 0.25, 0.75],
+      [0.75, 0.75, 0.25],
+    ];
+    const DIAMOND_CC_DISTANCE = DIAMOND_LATTICE_A * Math.sqrt(3) / 4;
+    const FLAT_DIAMOND_SITES = buildFlatDiamondSites();
+    const FLAT_DIAMOND_BONDS = buildFlatDiamondBonds(FLAT_DIAMOND_SITES);
+    const FLAT_STEP_CYCLES = [0.12, 0.38, 0.64, 0.90];
+    const FLAT_STEP_TITLES = [
+      'Electronic excitation',
+      'Charge/bonding change',
+      'N_i -> N_s',
+      'NV center formation',
+    ];
+    const FLAT_STEP_TEXT = [
+      'Electron irradiation locally excites the N_i + V1 + V2 defect complex.',
+      'Carrier capture changes the charge state and bonding of the complex.',
+      'Interstitial nitrogen N_i moves into the V1 carbon lattice site and becomes N_s.',
+      'The neighboring vacancy V2 remains next to N_s, giving the NV center.',
+    ];
+
+    function parseXYZ(text) {
+      const lines = text.trim().split(/\r?\n/);
+      const atoms = [];
+      for (const line of lines.slice(2)) {
+        const parts = line.trim().split(/\s+/);
+        if (parts.length >= 4) {
+          atoms.push({
+            symbol: parts[0],
+            pos: parts.slice(1, 4).map(Number),
+          });
+        }
+      }
+      return atoms;
+    }
+
+    function dist(a, b) {
+      return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+    }
+
+    function buildFlatDiamondSites(nx = 4, ny = 4, nz = 4) {
+      const allSites = [];
+      for (let ix = 0; ix < nx; ix += 1) {
+        for (let iy = 0; iy < ny; iy += 1) {
+          for (let iz = 0; iz < nz; iz += 1) {
+            DIAMOND_BASIS.forEach((basis, basisIndex) => {
+              const pos = [
+                (ix + basis[0]) * DIAMOND_LATTICE_A,
+                (iy + basis[1]) * DIAMOND_LATTICE_A,
+                (iz + basis[2]) * DIAMOND_LATTICE_A,
+              ];
+              const layer = (pos[0] + pos[1]) / Math.SQRT2;
+              allSites.push({
+                basisIndex,
+                pos,
+                u: (pos[0] - pos[1]) / Math.SQRT2,
+                z: pos[2],
+                layer,
+              });
+            });
+          }
+        }
+      }
+      const minLayer = Math.min(...allSites.map(site => site.layer));
+      const maxLayer = Math.max(...allSites.map(site => site.layer));
+      const layerCenter = (minLayer + maxLayer) / 2;
+      const layers = [...new Set(allSites.map(site => Math.round(site.layer * 1000) / 1000))];
+      const targetLayer = layers.sort((a, b) => Math.abs(a - layerCenter) - Math.abs(b - layerCenter))[0];
+      return allSites
+        .filter(site => Math.abs(site.layer - targetLayer) < 0.002)
+        .map((site, index) => ({
+          ...site,
+          index,
+          layerOffset: 0,
+          drawDepth: site.z,
+        }));
+    }
+
+    function buildFlatDiamondBonds(sites) {
+      const bonds = [];
+      for (let i = 0; i < sites.length; i += 1) {
+        for (let j = i + 1; j < sites.length; j += 1) {
+          if (Math.abs(dist(sites[i].pos, sites[j].pos) - DIAMOND_CC_DISTANCE) < 0.08) {
+            bonds.push([i, j]);
+          }
+        }
+      }
+      return bonds;
+    }
+
+    function lerp(a, b, f) {
+      return [
+        a[0] + (b[0] - a[0]) * f,
+        a[1] + (b[1] - a[1]) * f,
+        a[2] + (b[2] - a[2]) * f,
+      ];
+    }
+
+    function smoothstep(value) {
+      const x = Math.max(0, Math.min(1, value));
+      return x * x * (3 - 2 * x);
+    }
+
+    function electronEnergyEv() {
+      const fraction = Number(energySlider.value) / 100;
+      const logMin = Math.log10(ENERGY_MIN_EV);
+      const logMax = Math.log10(ENERGY_MAX_EV);
+      return 10 ** (logMin + (logMax - logMin) * fraction);
+    }
+
+    function electronAmountScale() {
+      return Number(amountSlider.value) / 45;
+    }
+
+    function electronReach() {
+      return reachFromEnergyEv(electronEnergyEv());
+    }
+
+    function reachFromEnergyEv(energy) {
+      const safeEnergy = Math.max(1, Number(energy) || 1);
+      const logE = Math.log10(safeEnergy);
+      const shallow = Math.log10(30);
+      const deep = Math.log10(30_000);
+      return smoothstep((logE - shallow) / (deep - shallow));
+    }
+
+    function electronPenetrationDepth() {
+      return penetrationDepthFromEnergyEv(electronEnergyEv());
+    }
+
+    function penetrationDepthFromEnergyEv(energy) {
+      return 3.2 + reachFromEnergyEv(energy) * 14.0;
+    }
+
+    function formatEnergy(ev) {
+      return ev >= 1000 ? `${(ev / 1000).toFixed(ev >= 10_000 ? 1 : 2)} keV` : `${Math.round(ev)} eV`;
+    }
+
+    function updateBeamUI() {
+      const energy = electronEnergyEv();
+      const amount = electronAmountScale();
+      const reach = electronReach();
+      energyOut.textContent = formatEnergy(energy);
+      amountOut.textContent = `${amount.toFixed(1)}x`;
+      const depthLabel = reach < 0.28 ? '表面近くで止まりやすい' : reach < 0.68 ? '欠陥近くまで届き始める' : '格子の奥まで入りやすい';
+      beamDepthText.textContent = `エネルギーが高いほど深く入る概念表示: ${depthLabel} / 侵入長 ${electronPenetrationDepth().toFixed(1)} Å`;
+    }
+
+    function formatDepth(depth) {
+      return `${depth.toFixed(depth < 10 && depth % 1 ? 1 : 0)} Å`;
+    }
+
+    function formatDepthEnergy(ev) {
+      if (ev >= 1000) return `${(ev / 1000).toFixed(ev >= 10_000 ? 1 : 2)} keV`;
+      if (ev >= 100) return `${ev.toFixed(0)} eV`;
+      return `${ev.toFixed(1)} eV`;
+    }
+
+    function residualEnergyAtDepth(depth, incidentEnergy, lambda) {
+      return incidentEnergy * Math.exp(-depth / lambda);
+    }
+
+    function thresholdDepthForEnergy(incidentEnergy, lambda) {
+      if (incidentEnergy <= DEPTH_THRESHOLD_EV) return 0;
+      return lambda * Math.log(incidentEnergy / DEPTH_THRESHOLD_EV);
+    }
+
+    function depthRowsForEnergy(energy) {
+      const lambda = penetrationDepthFromEnergyEv(energy);
+      const thresholdDepth = thresholdDepthForEnergy(energy, lambda);
+      const maxDepth = Math.max(12, Math.ceil(Math.max(lambda * 5, thresholdDepth * 1.35)));
+      const depths = new Set([0, Number(thresholdDepth.toFixed(3)), maxDepth]);
+      for (let i = 1; i < 10; i += 1) {
+        depths.add(Number(((maxDepth * i) / 10).toFixed(1)));
+      }
+      return [...depths]
+        .filter(depth => depth >= 0 && depth <= maxDepth)
+        .sort((a, b) => a - b)
+        .map(depth => {
+          const isThreshold = Math.abs(depth - thresholdDepth) < 0.002;
+          const remainingEnergy = isThreshold
+            ? DEPTH_THRESHOLD_EV
+            : residualEnergyAtDepth(depth, energy, lambda);
+          const relative = energy > 0 ? remainingEnergy / energy : 0;
+          return {
+            depth,
+            remainingEnergy,
+            relative,
+            isThreshold,
+            aboveThreshold: isThreshold || remainingEnergy >= DEPTH_THRESHOLD_EV,
+          };
+        });
+    }
+
+    function drawCrossSection() {
+      const canvasEl = document.getElementById('crossSectionCanvas');
+      const ctx = canvasEl.getContext('2d');
+      const w = canvasEl.width;
+      const h = canvasEl.height;
+      const energy = electronEnergyEv();
+      const lambda = penetrationDepthFromEnergyEv(energy);
+      const thresholdDepth = thresholdDepthForEnergy(energy, lambda);
+      const rows = depthRowsForEnergy(energy);
+      const maxDepth = rows[rows.length - 1].depth;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#101514';
+      ctx.fillRect(0, 0, w, h);
+
+      const pad = { left: 82, right: 24, top: 34, bottom: 58 };
+      const plotX = pad.left;
+      const plotW = w - pad.left - pad.right;
+      const top = pad.top;
+      const bottom = h - pad.bottom;
+      const plotH = bottom - top;
+      const minEnergy = Math.max(
+        0.3,
+        Math.min(DEPTH_THRESHOLD_EV * 0.45, residualEnergyAtDepth(maxDepth, energy, lambda))
+      );
+      const maxEnergy = Math.max(energy, DEPTH_THRESHOLD_EV * 1.2);
+      const logMin = Math.log10(minEnergy);
+      const logMax = Math.log10(maxEnergy);
+      const depthToX = depth => plotX + (depth / maxDepth) * plotW;
+      const energyToY = ev => {
+        const safeEv = Math.max(minEnergy, Math.min(maxEnergy, ev));
+        return bottom - ((Math.log10(safeEv) - logMin) / (logMax - logMin)) * plotH;
+      };
+
+      ctx.fillStyle = '#18211f';
+      ctx.fillRect(plotX, top, plotW, plotH);
+
+      const xTicks = [0, maxDepth * 0.25, maxDepth * 0.5, maxDepth * 0.75, maxDepth];
+      const yTicks = [1, 3, 10, 13, 30, 100, 300, 1000, 3000, 10000, 30000]
+        .filter(v => v >= minEnergy && v <= maxEnergy);
+
+      ctx.strokeStyle = 'rgba(216,210,196,0.22)';
+      ctx.lineWidth = 1;
+      ctx.font = '18px Segoe UI, sans-serif';
+      ctx.fillStyle = '#bfc8c7';
+      for (const tick of xTicks) {
+        const x = depthToX(tick);
+        ctx.beginPath();
+        ctx.moveTo(x, top);
+        ctx.lineTo(x, bottom);
+        ctx.stroke();
+        ctx.fillText(formatDepth(tick), x - 18, bottom + 26);
+      }
+      for (const tick of yTicks) {
+        const y = energyToY(tick);
+        ctx.beginPath();
+        ctx.moveTo(plotX, y);
+        ctx.lineTo(plotX + plotW, y);
+        ctx.stroke();
+        ctx.fillText(formatDepthEnergy(tick), 12, y + 6);
+      }
+
+      ctx.strokeStyle = '#d8d2c4';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(plotX, top);
+      ctx.lineTo(plotX, bottom);
+      ctx.lineTo(plotX + plotW, bottom);
+      ctx.stroke();
+
+      const gradient = ctx.createLinearGradient(plotX, 0, plotX + plotW, 0);
+      gradient.addColorStop(0, 'rgba(121,232,255,0.78)');
+      gradient.addColorStop(Math.min(1, thresholdDepth / maxDepth), 'rgba(121,232,255,0.28)');
+      gradient.addColorStop(1, 'rgba(121,232,255,0.02)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(plotX, top, plotW, plotH);
+
+      ctx.strokeStyle = '#f2c94c';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let i = 0; i <= 180; i += 1) {
+        const z = (i / 180) * maxDepth;
+        const x = depthToX(z);
+        const y = energyToY(residualEnergyAtDepth(z, energy, lambda));
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      const thresholdX = depthToX(Math.min(thresholdDepth, maxDepth));
+      const thresholdY = energyToY(DEPTH_THRESHOLD_EV);
+      ctx.strokeStyle = '#f7f2a1';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 5]);
+      ctx.beginPath();
+      ctx.moveTo(plotX, thresholdY);
+      ctx.lineTo(plotX + plotW, thresholdY);
+      ctx.moveTo(thresholdX, top);
+      ctx.lineTo(thresholdX, bottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = '#f7f2a1';
+      ctx.font = '20px Segoe UI, sans-serif';
+      const thresholdLabel = energy <= DEPTH_THRESHOLD_EV
+        ? '表面で13 eV以下'
+        : `13 eV到達: ${formatDepth(thresholdDepth)}`;
+      ctx.fillText(thresholdLabel, Math.min(thresholdX + 8, w - 210), top + 26);
+
+      ctx.fillStyle = '#e7fbff';
+      ctx.font = '22px Segoe UI, sans-serif';
+      ctx.fillText(`2D断面  入射 ${formatEnergy(energy)}`, 18, 24);
+      ctx.font = '19px Segoe UI, sans-serif';
+      ctx.fillText('深さ z (Å)', plotX + plotW / 2 - 42, h - 14);
+      ctx.save();
+      ctx.translate(19, top + plotH / 2 + 72);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('残りエネルギー E(z) [eV] / 対数目盛', 0, 0);
+      ctx.restore();
+    }
+
+    function updateDepthTable() {
+      const energy = electronEnergyEv();
+      const lambda = penetrationDepthFromEnergyEv(energy);
+      const thresholdDepth = thresholdDepthForEnergy(energy, lambda);
+      const rows = depthRowsForEnergy(energy);
+      depthEnergyOut.textContent = formatEnergy(energy);
+      depthThresholdOut.textContent = `${DEPTH_THRESHOLD_EV} eV`;
+      const depthText = energy <= DEPTH_THRESHOLD_EV
+        ? '入射時点で13 eV以下です'
+        : `13 eVまで減る深さ: ${formatDepth(thresholdDepth)} (${(thresholdDepth / 10).toFixed(3)} nm)`;
+      depthSummaryText.textContent = `${formatEnergy(energy)}入射: ${depthText} / 減衰長 lambda = ${lambda.toFixed(2)} Å`;
+      depthTableBody.innerHTML = rows.map(row => `
+        <tr>
+          <td>${formatDepth(row.depth)}${row.isThreshold ? ' *' : ''}</td>
+          <td>${formatDepthEnergy(row.remainingEnergy)}</td>
+          <td>${row.relative.toFixed(3)}</td>
+          <td>${row.aboveThreshold ? '13 eV以上' : '13 eV未満'}</td>
+        </tr>
+      `).join('');
+      drawCrossSection();
+    }
+
+    function lerpPoint(a, b, fraction) {
+      return {
+        x: a.x + (b.x - a.x) * fraction,
+        y: a.y + (b.y - a.y) * fraction,
+      };
+    }
+
+    function drawCircle2d(ctx, point, radius, fill, stroke = null, lineWidth = 2) {
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+      if (fill) {
+        ctx.fillStyle = fill;
+        ctx.fill();
+      }
+      if (stroke) {
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = lineWidth;
+        ctx.stroke();
+      }
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function buildFlatDiamondProjection(bounds) {
+      const uValues = FLAT_DIAMOND_SITES.map(site => site.u);
+      const depthValues = FLAT_DIAMOND_SITES.map(site => site.drawDepth);
+      const minU = Math.min(...uValues);
+      const maxU = Math.max(...uValues);
+      const minDepth = Math.min(...depthValues);
+      const maxDepth = Math.max(...depthValues);
+      const contentW = Math.max(1, bounds.right - bounds.left - 92);
+      const contentH = Math.max(1, bounds.bottom - bounds.surfaceY - 96);
+      const scale = Math.min(contentW / Math.max(1, maxU - minU), contentH / Math.max(1, maxDepth - minDepth));
+      const originX = (bounds.left + bounds.right) / 2 - ((minU + maxU) / 2) * scale;
+      const originY = bounds.surfaceY + 58 - minDepth * scale;
+      const atoms = FLAT_DIAMOND_SITES.map(site => ({
+        ...site,
+        x: originX + site.u * scale,
+        y: originY + site.drawDepth * scale,
+      }));
+
+      const desiredV1 = {
+        x: bounds.left + (bounds.right - bounds.left) * 0.53,
+        y: bounds.surfaceY + (bounds.bottom - bounds.surfaceY) * 0.42,
+      };
+      const v1 = atoms.reduce((best, atom) => {
+        const score = Math.pow((atom.x - desiredV1.x) / Math.max(1, bounds.right - bounds.left), 2)
+          + Math.pow((atom.y - desiredV1.y) / Math.max(1, bounds.bottom - bounds.surfaceY), 2) * 1.8;
+        return !best || score < best.score ? { ...atom, score } : best;
+      }, null);
+
+      const neighborIndices = FLAT_DIAMOND_BONDS
+        .filter(([a, b]) => a === v1.index || b === v1.index)
+        .map(([a, b]) => (a === v1.index ? b : a));
+      const desiredV2 = {
+        x: v1.x + Math.max(54, scale * 1.45),
+        y: v1.y + Math.max(44, scale * 1.05),
+      };
+      const v2 = neighborIndices
+        .map(index => atoms[index])
+        .reduce((best, atom) => {
+          const directionPenalty = atom.x < v1.x - 2 ? 0.08 : 0;
+          const score = Math.pow((atom.x - desiredV2.x) / Math.max(1, bounds.right - bounds.left), 2)
+            + Math.pow((atom.y - desiredV2.y) / Math.max(1, bounds.bottom - bounds.surfaceY), 2)
+            + directionPenalty;
+          return !best || score < best.score ? { ...atom, score } : best;
+        }, null) || atoms[neighborIndices[0]];
+
+      const nStart = {
+        x: clamp(v1.x - Math.max(86, scale * 1.85), bounds.left + 42, bounds.right - 42),
+        y: clamp(v1.y + Math.max(58, scale * 1.18), bounds.surfaceY + 48, bounds.bottom - 48),
+      };
+
+      return {
+        atoms,
+        bonds: FLAT_DIAMOND_BONDS,
+        v1,
+        v2,
+        nStart,
+        scale,
+      };
+    }
+
+    function drawVacancySite2d(ctx, point, alpha = 1, radius = 18) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      drawCircle2d(ctx, point, radius, 'rgba(212,72,63,0.04)', '#d4483f', 2.4);
+      ctx.restore();
+    }
+
+    function drawParticle2d(ctx, point, radius, fill, stroke, label = '', labelColor = '#111111') {
+      drawCircle2d(ctx, point, radius, fill, stroke, 1.7);
+      if (!label) return;
+      ctx.save();
+      ctx.fillStyle = labelColor;
+      ctx.font = '700 11px Segoe UI, Yu Gothic UI, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, point.x, point.y + 0.5);
+      ctx.restore();
+    }
+
+    function drawFlatDiamondLattice(ctx, diamond, nT) {
+      const missing = new Set([diamond.v1.index, diamond.v2.index]);
+      ctx.save();
+      const atoms = [...diamond.atoms].sort((a, b) => a.layerOffset - b.layerOffset);
+      for (const atom of atoms) {
+        if (missing.has(atom.index)) continue;
+        const radius = Math.max(5.2, Math.min(7.2, diamond.scale * 0.13));
+        ctx.globalAlpha = 0.88;
+        drawCircle2d(ctx, atom, radius, '#a9b0b7', '#747d86', 1);
+      }
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    }
+
+    function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.includes(' ') ? text.split(/(\s+)/) : text.split('');
+      let line = '';
+      let yy = y;
+      for (const word of words) {
+        const next = line + word;
+        if (line && ctx.measureText(next).width > maxWidth) {
+          ctx.fillText(line, x, yy);
+          line = word;
+          yy += lineHeight;
+        } else {
+          line = next;
+        }
+      }
+      if (line) ctx.fillText(line, x, yy);
+      return yy + lineHeight;
+    }
+
+    function drawFlat2DScene(now = performance.now()) {
+      const rect = flatCanvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+      if (!w || !h) return;
+      if (!flat2dStartTime) flat2dStartTime = now;
+
+      const dpr = flatCanvas.width / Math.max(1, w);
+      flatCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      flatCtx.clearRect(0, 0, w, h);
+
+      const duration = 7600;
+      let cycle = ((now - flat2dStartTime) % duration) / duration;
+      if (flat2dManualMode) {
+        cycle = FLAT_STEP_CYCLES[flat2dStepIndex % FLAT_STEP_CYCLES.length];
+      }
+
+      const figW = Math.min(w * 0.66, 700);
+      const figH = Math.min(Math.max(170, h * 0.30), 245);
+      const figX = (w - figW) / 2;
+      const figY = Math.max(42, h * 0.08);
+      const nodeRadius = Math.max(10, Math.min(14, figW * 0.020));
+      const padX = Math.max(48, figW * 0.08);
+      const topY = figY + figH * 0.23;
+      const midY = figY + figH * 0.48;
+      const bottomY = figY + figH * 0.73;
+      const unitCount = 6;
+      const spacing = (figW - padX * 2) / unitCount;
+      const latticeNodes = [];
+      const bonds = [];
+      const byKey = new Map();
+      const addNode = (key, x, y, row) => {
+        const node = { key, x, y, row };
+        latticeNodes.push(node);
+        byKey.set(key, node);
+        return node;
+      };
+      for (let i = 0; i <= unitCount; i += 1) {
+        addNode(`t${i}`, figX + padX + i * spacing, topY, 'top');
+        addNode(`b${i}`, figX + padX + i * spacing, bottomY, 'bottom');
+      }
+      for (let i = 0; i < unitCount; i += 1) {
+        addNode(`m${i}`, figX + padX + (i + 0.5) * spacing, midY, 'middle');
+        bonds.push([`t${i}`, `m${i}`], [`m${i}`, `b${i}`], [`m${i}`, `t${i + 1}`], [`m${i}`, `b${i + 1}`]);
+      }
+      const targetV = byKey.get('m2');
+      const secondV = byKey.get('t3');
+      const nStart = { x: targetV.x - spacing * 0.72, y: targetV.y - figH * 0.14 };
+      const complexCenter = {
+        x: (targetV.x + secondV.x + nStart.x) / 3,
+        y: (targetV.y + secondV.y + nStart.y) / 3,
+      };
+
+      const slideT = smoothstep((cycle - 0.50) / 0.28);
+      const nT = Math.max(0, Math.min(1, slideT));
+      const nPos = lerpPoint(nStart, targetV, nT);
+      const impact =
+        Math.exp(-Math.pow((cycle - 0.18) / 0.08, 2)) +
+        Math.exp(-Math.pow((cycle - 0.38) / 0.12, 2)) * 0.7;
+      const activeStep = cycle < 0.26 ? 0 : cycle < 0.52 ? 1 : cycle < 0.80 ? 2 : 3;
+      const stateLabel = FLAT_STEP_TITLES[activeStep];
+      flatCanvas.dataset.step = String(activeStep);
+      flatCanvas.setAttribute('aria-label', `2D diamond cross-section animation: ${stateLabel}`);
+
+      flatCtx.fillStyle = '#ffffff';
+      flatCtx.fillRect(0, 0, w, h);
+
+      const glowRadius = Math.max(52, spacing * 0.95) + impact * 30;
+      const glow = flatCtx.createRadialGradient(complexCenter.x, complexCenter.y, 4, complexCenter.x, complexCenter.y, glowRadius);
+      glow.addColorStop(0, `rgba(242,201,76,${Math.min(0.48, impact * 0.48)})`);
+      glow.addColorStop(1, 'rgba(242,201,76,0)');
+
+      flatCtx.save();
+      flatCtx.fillStyle = '#ffffff';
+      flatCtx.fillRect(figX, figY, figW, figH);
+      flatCtx.fillStyle = glow;
+      flatCtx.beginPath();
+      flatCtx.arc(complexCenter.x, complexCenter.y, glowRadius, 0, Math.PI * 2);
+      flatCtx.fill();
+
+      const missing = new Set([targetV.key, secondV.key]);
+      flatCtx.strokeStyle = '#6e95bd';
+      flatCtx.lineWidth = 2;
+      bonds.forEach(([aKey, bKey]) => {
+        if (missing.has(aKey) || missing.has(bKey)) return;
+        const a = byKey.get(aKey);
+        const b = byKey.get(bKey);
+        flatCtx.beginPath();
+        flatCtx.moveTo(a.x, a.y);
+        flatCtx.lineTo(b.x, b.y);
+        flatCtx.stroke();
+      });
+
+      latticeNodes.forEach(node => {
+        if (missing.has(node.key)) return;
+        drawParticle2d(flatCtx, node, nodeRadius, '#d9dde1', '#6d737a');
+      });
+
+      flatCtx.save();
+      flatCtx.strokeStyle = 'rgba(212, 72, 63, 0.38)';
+      flatCtx.lineWidth = 1.5;
+      flatCtx.setLineDash([5, 5]);
+      flatCtx.beginPath();
+      flatCtx.moveTo(targetV.x, targetV.y);
+      flatCtx.lineTo(secondV.x, secondV.y);
+      flatCtx.stroke();
+      flatCtx.restore();
+
+      drawVacancySite2d(flatCtx, targetV, Math.max(0.18, 1 - nT * 0.82), nodeRadius + 4);
+      drawVacancySite2d(flatCtx, secondV, 1, nodeRadius + 4);
+
+      flatCtx.fillStyle = '#111111';
+      flatCtx.font = '15px "Times New Roman", "Yu Mincho", serif';
+      flatCtx.textAlign = 'center';
+      flatCtx.fillText('V1', targetV.x, targetV.y + nodeRadius + 18);
+      flatCtx.fillText('V2', secondV.x, secondV.y + nodeRadius + 18);
+
+      drawCircle2d(flatCtx, nPos, nodeRadius + 3, '#2d6cdf', '#173e80', 2);
+      flatCtx.fillStyle = '#ffffff';
+      flatCtx.font = '700 12px Segoe UI, Yu Gothic UI, sans-serif';
+      flatCtx.textAlign = 'center';
+      flatCtx.fillText(nT > 0.78 ? 'N_s' : 'N_i', nPos.x, nPos.y + 5);
+
+      flatCtx.strokeStyle = '#111111';
+      flatCtx.lineWidth = 2;
+      flatCtx.strokeRect(figX, figY, figW, figH);
+      flatCtx.fillStyle = '#111111';
+      flatCtx.font = '18px "Times New Roman", "Yu Mincho", serif';
+      flatCtx.fillText('Diamond', figX + figW / 2, figY + figH - 18);
+      flatCtx.restore();
+
+      const captionX = Math.max(48, Math.min(figX - 40, 90));
+      const captionY = figY + figH + 38;
+      const captionW = Math.min(w - captionX * 2, 980);
+      flatCtx.fillStyle = '#111111';
+      flatCtx.font = '16px Segoe UI, Yu Gothic UI, sans-serif';
+      flatCtx.textAlign = 'left';
+      const captionText = 'Fig. 1. Schematic cross-section of diamond. V1 and V2 are adjacent nearest-neighbor carbon lattice sites in the diamond network; N_i recombines into V1 and the remaining adjacent V2 forms the NV pair with N_s.';
+      const keyText = 'Particle key: filled gray = carbon lattice site; open red = vacancy; blue = nitrogen; dashed red segment = nearest-neighbor V1-V2 site pair; yellow = electronic excitation.';
+      const afterCaptionY = wrapCanvasText(flatCtx, captionText, captionX, captionY, captionW, 23);
+      const afterKeyY = wrapCanvasText(flatCtx, keyText, captionX, afterCaptionY + 8, captionW, 23);
+
+      const stepY = afterKeyY + 16;
+      const stepRowH = 34;
+      FLAT_STEP_TEXT.forEach((text, index) => {
+        const y = stepY + index * (stepRowH + 7);
+        const isActive = index === activeStep;
+        flatCtx.save();
+        flatCtx.shadowColor = isActive ? 'rgba(242, 201, 76, 0.55)' : 'transparent';
+        flatCtx.shadowBlur = isActive ? 18 : 0;
+        flatCtx.fillStyle = isActive ? 'rgba(242, 201, 76, 0.18)' : '#ffffff';
+        flatCtx.strokeStyle = isActive ? '#f2c94c' : '#d8d2c4';
+        flatCtx.lineWidth = isActive ? 2 : 1;
+        flatCtx.fillRect(captionX, y, captionW, stepRowH);
+        flatCtx.strokeRect(captionX, y, captionW, stepRowH);
+        flatCtx.restore();
+        flatCtx.fillStyle = isActive ? '#111111' : '#333333';
+        flatCtx.font = '700 13px Segoe UI, Yu Gothic UI, sans-serif';
+        flatCtx.fillText(`Step ${index + 1}. ${FLAT_STEP_TITLES[index]}`, captionX + 12, y + 21);
+        flatCtx.font = '13px Segoe UI, Yu Gothic UI, sans-serif';
+        flatCtx.fillText(text, captionX + 265, y + 21);
+      });
+    }
+
+    function centerPosition(pos) {
+      const c = cellLength / 2;
+      return new THREE.Vector3(pos[0] - c, pos[1] - c, pos[2] - c);
+    }
+
+    function clearGroup(group) {
+      while (group.children.length) {
+        const child = group.children.pop();
+        if (child.geometry && child.geometry !== sphereGeo && child.geometry !== nitrogenGeo && child.geometry !== vacancyGeo && child.geometry !== bondGeo) {
+          child.geometry.dispose();
+        }
+      }
+    }
+
+    function resetAtomScales() {
+      for (const mesh of atomMeshes) {
+        mesh.scale.setScalar(1);
+      }
+    }
+
+    async function loadScenario(key) {
+      currentScenario = key;
+      const config = SCENARIOS[key];
+      loadError.classList.remove('show');
+      subtitle.textContent = '構造ファイルを読み込み中';
+
+      try {
+        const [initialText, finalText, metadata] = await Promise.all([
+          fetch(config.initial).then(r => {
+            if (!r.ok) throw new Error(config.initial);
+            return r.text();
+          }),
+          fetch(config.final).then(r => {
+            if (!r.ok) throw new Error(config.final);
+            return r.text();
+          }),
+          fetch(config.metadata).then(r => {
+            if (!r.ok) throw new Error(config.metadata);
+            return r.json();
+          }),
+        ]);
+
+        const initial = parseXYZ(initialText);
+        const final = parseXYZ(finalText);
+        if (initial.length !== final.length) {
+          throw new Error('initial.xyz と final.xyz の原子数が合いません');
+        }
+        cellLength = Number(metadata.cell_length_angstrom || 10.701);
+        positionChangedIndices = new Set();
+        for (let i = 0; i < initial.length; i += 1) {
+          if (dist(initial[i].pos, final[i].pos) > 0.18 || initial[i].symbol === 'N') {
+            positionChangedIndices.add(i);
+          }
+        }
+
+        model = { initial, final, metadata, config };
+        t = 0;
+        if (conceptMode) {
+          conceptStartTime = 0;
+          lastConceptT = -1;
+        }
+        pathSlider.value = '0';
+        buildMeshes();
+        updateUI();
+        updateModel();
+        drawEnergyPlot();
+      } catch (error) {
+        loadError.textContent = '構造ファイルを読み込めませんでした。ローカルサーバーから nv_dft_viewer.html を開いてください。';
+        loadError.classList.add('show');
+        console.error(error);
+      }
+    }
+
+    function buildMeshes() {
+      clearGroup(atomGroup);
+      clearGroup(bondGroup);
+      clearGroup(helperGroup);
+      atomMeshes = [];
+
+      for (let i = 0; i < model.initial.length; i += 1) {
+        const atom = model.initial[i];
+        const positionChanged = positionChangedIndices.has(i) && atom.symbol !== 'N';
+        const geo = atom.symbol === 'N' ? nitrogenGeo : sphereGeo;
+        const mat = atom.symbol === 'N' ? materials.N : materials.C;
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.userData = { symbol: atom.symbol, positionChanged };
+        atomGroup.add(mesh);
+        atomMeshes.push(mesh);
+      }
+
+      addCellBox();
+      addPathLine();
+      addVacancyMarkers();
+      buildConceptAnimation();
+    }
+
+    function currentPositions() {
+      return model.initial.map((atom, i) => ({
+        symbol: atom.symbol,
+        pos: lerp(atom.pos, model.final[i].pos, t),
+      }));
+    }
+
+    function updateModel() {
+      if (!model) return;
+      const positions = currentPositions();
+      for (let i = 0; i < positions.length; i += 1) {
+        const mesh = atomMeshes[i];
+        mesh.position.copy(centerPosition(positions[i].pos));
+        if (positions[i].symbol === 'C') {
+          mesh.visible = toggles.carbon;
+          mesh.material = toggles.carbon ? materials.C : materials.dimC;
+        }
+      }
+      updateBonds(positions);
+      updateVacancyMarkers();
+      updateHelpersVisibility();
+      updateConceptTargetPulse();
+      updateUI();
+    }
+
+    function conceptTargetPosition() {
+      if (!model) return new THREE.Vector3(0, 0, 0);
+      if (model.metadata.moving_n_final_position_angstrom) {
+        return centerPosition(model.metadata.moving_n_final_position_angstrom);
+      }
+      if (currentScenario === 'ni_to_vc') {
+        return centerPosition(model.metadata.final_N_position_angstrom);
+      }
+      const nitrogen = model.initial.find(atom => atom.symbol === 'N');
+      return centerPosition(nitrogen ? nitrogen.pos : model.metadata.migrating_carbon_initial_position_angstrom);
+    }
+
+    function buildConceptAnimation() {
+      clearGroup(conceptGroup);
+      electronMeshes = [];
+      const electronCount = 84;
+      for (let i = 0; i < electronCount; i += 1) {
+        const material = materials.electron.clone();
+        const mesh = new THREE.Mesh(electronGeo, material);
+        mesh.userData = {
+          phase: i / electronCount,
+          wobble: Math.random() * Math.PI * 2,
+          size: 0.72 + Math.random() * 1.15,
+          offset: new THREE.Vector3(
+            (Math.random() - 0.5) * 2.2,
+            (Math.random() - 0.5) * 1.8,
+            (Math.random() - 0.5) * 2.2
+          ),
+        };
+        conceptGroup.add(mesh);
+        electronMeshes.push(mesh);
+      }
+      const burst = new THREE.Mesh(burstGeo, materials.burst.clone());
+      burst.name = 'conceptBurst';
+      burst.rotation.x = Math.PI / 2.7;
+      conceptGroup.add(burst);
+      conceptGroup.visible = conceptMode;
+    }
+
+    function updateConceptParticles(cycle) {
+      const target = conceptTargetPosition();
+      const beamOffset = new THREE.Vector3(-8.4, 6.8, 7.4);
+      const beamDirection = beamOffset.clone().multiplyScalar(-1).normalize();
+      const penetration = electronPenetrationDepth();
+      const amount = electronAmountScale();
+      const density = Math.min(1, 0.22 + amount * 0.42);
+      const speed = 1.1 + electronReach() * 0.62;
+      for (const mesh of electronMeshes) {
+        const phase = mesh.userData.phase;
+        const travel = (cycle * 1.42 * speed + phase) % 1;
+        mesh.visible = phase <= density;
+        const rain = smoothstep(travel);
+        const source = target.clone().add(beamOffset).add(mesh.userData.offset);
+        const endPoint = source.clone().add(beamDirection.clone().multiplyScalar(penetration));
+        const drift = new THREE.Vector3(
+          Math.sin((travel * 5.4 + phase) * Math.PI * 2) * 0.42,
+          Math.cos((travel * 3.1 + phase) * Math.PI * 2) * 0.28,
+          Math.sin((travel * 4.1 + phase) * Math.PI * 2) * 0.36
+        );
+        mesh.position.copy(source.lerp(endPoint, rain)).add(drift);
+        const fade = Math.sin(Math.PI * travel);
+        mesh.material.opacity = conceptMode ? Math.min(0.95, (0.10 + fade * 0.62) * Math.min(1.45, amount)) : 0;
+        mesh.scale.setScalar(mesh.userData.size * (0.62 + 0.46 * fade) * (0.85 + amount * 0.12));
+      }
+    }
+
+    function conceptImpact(cycle) {
+      const primary = Math.exp(-Math.pow((cycle - 0.54) / 0.065, 2));
+      const secondary = Math.exp(-Math.pow((cycle - 0.68) / 0.095, 2)) * 0.55;
+      const beamFactor = (0.24 + electronReach() * 0.76) * Math.min(1.5, electronAmountScale());
+      return Math.min(1, (primary + secondary) * beamFactor);
+    }
+
+    function updateConceptTargetPulse(cycle = 0) {
+      resetAtomScales();
+      if (!conceptMode) return;
+      const impact = conceptImpact(cycle);
+      for (const mesh of atomMeshes) {
+        if (mesh.userData.symbol === 'N') {
+          mesh.scale.setScalar(1 + impact * 0.42);
+        }
+      }
+      for (const marker of helperGroup.children.filter(child => child.name.startsWith('vacancy-'))) {
+        const baseScale = currentScenario === 'ni_to_vc' ? 1 + 0.25 * t : 1;
+        marker.scale.setScalar(baseScale * (1 + impact * 0.22));
+      }
+    }
+
+    function updateConceptAnimation(now) {
+      if (!conceptMode || !model) {
+        conceptGroup.visible = false;
+        return;
+      }
+      if (!conceptStartTime) conceptStartTime = now;
+      conceptGroup.visible = true;
+      const duration = 5200;
+      const cycle = ((now - conceptStartTime) % duration) / duration;
+      const rawPathT = cycle < 0.46 ? 0 : cycle < 0.78 ? smoothstep((cycle - 0.46) / 0.32) : 1;
+      const pathT = rawPathT * (0.18 + electronReach() * 0.82);
+      if (Math.abs(pathT - lastConceptT) > 0.01) {
+        t = pathT;
+        lastConceptT = pathT;
+        updateModel();
+        updateConceptTargetPulse(cycle);
+      } else {
+        updateConceptTargetPulse(cycle);
+      }
+      updateConceptParticles(cycle);
+      const burst = conceptGroup.getObjectByName('conceptBurst');
+      if (burst) {
+        const impact = conceptImpact(cycle);
+        burst.position.copy(conceptTargetPosition());
+        burst.material.opacity = impact * 0.82;
+        burst.scale.setScalar(0.35 + impact * 2.1);
+      }
+    }
+
+    function updateBonds(positions) {
+      clearGroup(bondGroup);
+      if (!toggles.bonds) return;
+      const maxDist = 1.77;
+      for (let i = 0; i < positions.length; i += 1) {
+        if (positions[i].symbol === 'C' && !toggles.carbon) continue;
+        for (let j = i + 1; j < positions.length; j += 1) {
+          if (positions[j].symbol === 'C' && !toggles.carbon) continue;
+          const d = dist(positions[i].pos, positions[j].pos);
+          if (d > 1.15 && d < maxDist) {
+            const bond = makeCylinder(centerPosition(positions[i].pos), centerPosition(positions[j].pos), materials.bond);
+            bondGroup.add(bond);
+          }
+        }
+      }
+    }
+
+    function makeCylinder(a, b, material) {
+      const mid = new THREE.Vector3().addVectors(a, b).multiplyScalar(0.5);
+      const dir = new THREE.Vector3().subVectors(b, a);
+      const mesh = new THREE.Mesh(bondGeo, material);
+      mesh.position.copy(mid);
+      mesh.scale.set(1, dir.length(), 1);
+      mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+      return mesh;
+    }
+
+    function addCellBox() {
+      const c = cellLength / 2;
+      const pts = [
+        [-c, -c, -c], [c, -c, -c], [c, c, -c], [-c, c, -c],
+        [-c, -c, c], [c, -c, c], [c, c, c], [-c, c, c],
+      ].map(p => new THREE.Vector3(...p));
+      const edges = [
+        0,1, 1,2, 2,3, 3,0,
+        4,5, 5,6, 6,7, 7,4,
+        0,4, 1,5, 2,6, 3,7,
+      ];
+      const vertices = [];
+      for (const index of edges) vertices.push(pts[index]);
+      const geo = new THREE.BufferGeometry().setFromPoints(vertices);
+      const lines = new THREE.LineSegments(geo, materials.cell);
+      lines.name = 'cell';
+      helperGroup.add(lines);
+    }
+
+    function addPathLine() {
+      const points = [];
+      if (model.metadata.moving_n_initial_position_angstrom && model.metadata.moving_n_final_position_angstrom) {
+        points.push(centerPosition(model.metadata.moving_n_initial_position_angstrom));
+        points.push(centerPosition(model.metadata.moving_n_final_position_angstrom));
+      } else if (currentScenario === 'ni_to_vc') {
+        points.push(centerPosition(model.metadata.initial_N_position_angstrom));
+        points.push(centerPosition(model.metadata.final_N_position_angstrom));
+      } else {
+        points.push(centerPosition(model.metadata.initial_vacancy_key ? model.metadata.migrating_carbon_final_position_angstrom : [0, 0, 0]));
+        points.push(centerPosition(model.metadata.final_vacancy_key_next_to_N ? model.metadata.migrating_carbon_initial_position_angstrom : [0, 0, 0]));
+      }
+      const geo = new THREE.BufferGeometry().setFromPoints(points);
+      const line = new THREE.Line(geo, materials.path);
+      line.name = 'path';
+      helperGroup.add(line);
+    }
+
+    function vacancyPositions() {
+      if (!model) return [];
+      const initialVacancies = model.metadata.vacancy_positions_initial_angstrom;
+      const finalVacancies = model.metadata.vacancy_positions_final_angstrom;
+      if (Array.isArray(initialVacancies) && Array.isArray(finalVacancies)) {
+        return initialVacancies.map((position, index) => lerp(position, finalVacancies[index] || position, t));
+      }
+      if (currentScenario === 'ni_to_vc') {
+        return [model.metadata.final_N_position_angstrom];
+      }
+      const from = model.metadata.migrating_carbon_final_position_angstrom;
+      const to = model.metadata.migrating_carbon_initial_position_angstrom;
+      return [lerp(from, to, t)];
+    }
+
+    function addVacancyMarkers() {
+      const positions = vacancyPositions();
+      positions.forEach((_, index) => {
+        const marker = new THREE.Mesh(vacancyGeo, materials.vacancy.clone());
+        marker.name = `vacancy-${index}`;
+        helperGroup.add(marker);
+      });
+    }
+
+    function updateVacancyMarkers() {
+      const positions = vacancyPositions();
+      positions.forEach((position, index) => {
+        let marker = helperGroup.getObjectByName(`vacancy-${index}`);
+        if (!marker) {
+          marker = new THREE.Mesh(vacancyGeo, materials.vacancy.clone());
+          marker.name = `vacancy-${index}`;
+          helperGroup.add(marker);
+        }
+        marker.position.copy(centerPosition(position));
+        marker.visible = toggles.vacancy;
+        if (currentScenario === 'ni_to_vc') {
+          marker.material.opacity = Math.max(0.14, 0.9 * (1 - t));
+          marker.scale.setScalar(1 + 0.25 * t);
+        } else {
+          marker.material.opacity = 0.9;
+          marker.scale.setScalar(1);
+        }
+      });
+      for (const child of helperGroup.children) {
+        if (child.name.startsWith('vacancy-')) {
+          const index = Number(child.name.replace('vacancy-', ''));
+          if (index >= positions.length) child.visible = false;
+        }
+      }
+    }
+
+    function updateHelpersVisibility() {
+      const cell = helperGroup.getObjectByName('cell');
+      const path = helperGroup.getObjectByName('path');
+      if (cell) cell.visible = toggles.cell;
+      if (path) path.visible = toggles.path;
+    }
+
+    function flat2dStateSummary() {
+      return `完全2D: ダイヤモンド中のC格子サイトを灰色粒子で表し、その一部にある N_i + V1 + V2 欠陥複合体が${formatEnergy(electronEnergyEv())}の電子照射で励起される概念図です。N_iはV1炭素格子サイトへ再結合してN_sになり、V2が隣に残ります。`;
+    }
+
+    function flat2dInterpretationLines() {
+      return [
+        '完全2Dモードは説明用の模式図です。灰色の粒子はC格子サイト、赤い輪は空孔、青い粒子は窒素、黄色の領域は局所電子励起を示しています。',
+        'Vが電子を捕まえてNを静電的に引き寄せる、という表示ではありません。',
+        'N_i + V1 + V2 の欠陥複合体全体が励起され、電子・正孔捕獲で電荷状態と結合状態が変わり、原子配置のエネルギー地形が変わる、という仮説を絵にしています。',
+        'その結果、格子間窒素N_iが空いている炭素格子サイトV1へ再結合して置換型窒素N_sになり、隣に残ったV2とのペアがNV centerになります。',
+      ];
+    }
+
+    function updateFlat2dInfoOnly() {
+      updateBeamUI();
+      subtitle.textContent = '完全2D: ダイヤモンド中の欠陥模式図';
+      document.getElementById('atomCount').textContent = 'N_i + V1 + V2';
+      document.getElementById('vacancyCount').textContent = '2';
+      document.getElementById('cellLength').textContent = '模式図';
+      document.getElementById('chargeState').textContent = '-';
+      document.getElementById('calcStatus').textContent = '完全2D中';
+      document.getElementById('stateText').textContent = flat2dStateSummary();
+      document.getElementById('interpretation').innerHTML = flat2dInterpretationLines().map(text => `<p>${text}</p>`).join('');
+      document.getElementById('interpretation').classList.remove('ok');
+      document.getElementById('interpretation').classList.add('concept');
+      conceptBadge.classList.remove('show');
+      flat2dBadge.classList.add('show');
+      document.getElementById('toggleFlat2d').setAttribute('aria-pressed', 'true');
+    }
+
+    function updateUI() {
+      if (!model) {
+        if (flat2dMode) updateFlat2dInfoOnly();
+        return;
+      }
+      updateBeamUI();
+      const config = model.config;
+      subtitle.textContent = config.subtitle;
+      document.querySelectorAll('.scenario-tabs button').forEach(button => {
+        button.classList.toggle('active', button.dataset.scenario === currentScenario);
+      });
+      document.querySelectorAll('.segmented button').forEach(button => {
+        button.classList.toggle('active', Math.abs(Number(button.dataset.state) - t) < 0.01);
+      });
+
+      pathOut.textContent = `${Math.round(t * 100)}%`;
+      pathSlider.value = String(Math.round(t * 100));
+      document.getElementById('vacancyCount').textContent = flat2dMode ? '2' : `${vacancyPositions().length}`;
+      document.getElementById('atomCount').textContent = flat2dMode ? 'N_i + V1 + V2' : `${model.initial.length}`;
+      document.getElementById('cellLength').textContent = flat2dMode ? '模式図' : `${cellLength.toFixed(3)} Å`;
+      document.getElementById('chargeState').textContent = flat2dMode ? '-' : `${model.metadata.charge}`;
+      document.getElementById('calcStatus').textContent = flat2dMode
+        ? '完全2D中'
+        : conceptMode
+          ? '概念アニメ中'
+          : '入力生成済み';
+
+      let stateIndex = 1;
+      if (t < 0.08) stateIndex = 0;
+      if (t > 0.92) stateIndex = 2;
+      const flat2dState = flat2dStateSummary();
+      const conceptState = t < 0.08
+        ? `概念アニメ: ${formatEnergy(electronEnergyEv())}の電子がふわーと入る段階。`
+        : t < 0.92
+          ? `概念アニメ: 侵入長${electronPenetrationDepth().toFixed(1)} Åの設定で、欠陥がえいっと動く段階。`
+          : '概念アニメ: 再配置後の形。実際に起こるかはNEB障壁で判定します。';
+      document.getElementById('stateText').textContent = flat2dMode ? flat2dState : conceptMode ? conceptState : config.state[stateIndex];
+      const interpretationLines = flat2dMode
+        ? flat2dInterpretationLines()
+        : conceptMode
+        ? [
+            `概念図です。エネルギー ${formatEnergy(electronEnergyEv())}、量 ${electronAmountScale().toFixed(1)}x。電子がNやCを直接押す証明ではなく、電子励起や電荷状態変化で移動障壁が下がるかもしれない、という見方を表しています。`,
+            ...config.interpretation,
+          ]
+        : config.interpretation;
+      document.getElementById('interpretation').innerHTML = interpretationLines.map(text => `<p>${text}</p>`).join('');
+      document.getElementById('interpretation').classList.toggle('ok', currentScenario === 'vacancy_hop_to_nv' && !conceptMode && !flat2dMode);
+      document.getElementById('interpretation').classList.toggle('concept', conceptMode || flat2dMode);
+      conceptBadge.classList.toggle('show', conceptMode && !flat2dMode);
+      flat2dBadge.classList.toggle('show', flat2dMode);
+
+      const toggleMap = [
+        ['toggleBonds', 'bonds'],
+        ['toggleCell', 'cell'],
+        ['toggleCarbon', 'carbon'],
+        ['toggleVacancy', 'vacancy'],
+        ['togglePath', 'path'],
+      ];
+      for (const [id, key] of toggleMap) {
+        document.getElementById(id).setAttribute('aria-pressed', String(toggles[key]));
+      }
+      document.getElementById('toggleConcept').setAttribute('aria-pressed', String(conceptMode));
+      document.getElementById('toggleFlat2d').setAttribute('aria-pressed', String(flat2dMode));
+      playBtn.textContent = playing ? 'Ⅱ' : '▶';
+      playBtn.title = playing ? '一時停止' : '経路を再生';
+    }
+
+    function setT(value) {
+      t = Math.max(0, Math.min(1, value));
+      updateModel();
+    }
+
+    function togglePlay() {
+      if (flat2dMode) setFlat2dMode(false);
+      if (conceptMode) setConceptMode(false);
+      playing = !playing;
+      if (playing) {
+        let last = performance.now();
+        const tick = (now) => {
+          if (!playing) return;
+          const dt = (now - last) / 1000;
+          last = now;
+          t += dt * 0.23;
+          if (t > 1) t = 0;
+          updateModel();
+          frameHandle = requestAnimationFrame(tick);
+        };
+        frameHandle = requestAnimationFrame(tick);
+      } else if (frameHandle) {
+        cancelAnimationFrame(frameHandle);
+      }
+      updateUI();
+    }
+
+    function setConceptMode(enabled) {
+      if (enabled && flat2dMode) setFlat2dMode(false);
+      conceptMode = enabled;
+      if (conceptMode) {
+        if (playing && frameHandle) cancelAnimationFrame(frameHandle);
+        playing = false;
+        conceptStartTime = 0;
+        lastConceptT = -1;
+        t = 0;
+        if (!electronMeshes.length && model) buildConceptAnimation();
+        conceptGroup.visible = true;
+        startConceptTimer();
+      } else {
+        stopConceptTimer();
+        conceptStartTime = 0;
+        lastConceptT = -1;
+        conceptGroup.visible = false;
+        resetAtomScales();
+      }
+      updateModel();
+    }
+
+    function restartConceptAnimation() {
+      if (flat2dMode) setFlat2dMode(false);
+      setConceptMode(true);
+      t = 0;
+      conceptStartTime = 0;
+      lastConceptT = -1;
+      startConceptTimer();
+      updateModel();
+    }
+
+    function setFlat2dMode(enabled) {
+      flat2dMode = enabled;
+      if (flat2dMode) {
+        if (playing && frameHandle) cancelAnimationFrame(frameHandle);
+        playing = false;
+        if (conceptMode) {
+          stopConceptTimer();
+          conceptMode = false;
+          conceptGroup.visible = false;
+          resetAtomScales();
+        }
+        flat2dStartTime = 0;
+        flat2dManualMode = true;
+        flat2dStepIndex = 0;
+      } else {
+        flat2dManualMode = false;
+      }
+      stageEl.classList.toggle('flat-2d', flat2dMode);
+      flatCanvas.classList.toggle('show', flat2dMode);
+      if (flat2dMode) drawFlat2DScene(performance.now());
+      updateModel();
+      if (!model) updateUI();
+    }
+
+    function restartFlat2dAnimation() {
+      setFlat2dMode(true);
+      flat2dStartTime = 0;
+      flat2dManualMode = false;
+      flat2dStepIndex = 0;
+      drawFlat2DScene(performance.now());
+      updateUI();
+    }
+
+    function advanceAnimationStep() {
+      if (flat2dMode) {
+        flat2dManualMode = true;
+        flat2dStepIndex = (flat2dStepIndex + 1) % FLAT_STEP_CYCLES.length;
+        drawFlat2DScene(performance.now());
+        updateUI();
+        return;
+      }
+      if (conceptMode) {
+        setT(t >= 0.95 ? 0 : Math.min(1, t + 0.25));
+        lastConceptT = -1;
+        updateConceptAnimation(performance.now());
+        return;
+      }
+      setT(t >= 0.95 ? 0 : Math.min(1, t + 0.25));
+    }
+
+    function startConceptTimer() {
+      stopConceptTimer();
+      conceptTimer = window.setInterval(() => {
+        updateConceptAnimation(performance.now());
+        renderer.render(scene, camera);
+      }, 33);
+    }
+
+    function stopConceptTimer() {
+      if (conceptTimer) {
+        window.clearInterval(conceptTimer);
+        conceptTimer = null;
+      }
+    }
+
+    function drawEnergyPlot() {
+      const canvasEl = document.getElementById('energyCanvas');
+      const ctx = canvasEl.getContext('2d');
+      const w = canvasEl.width;
+      const h = canvasEl.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#fffdfa';
+      ctx.fillRect(0, 0, w, h);
+
+      const energies = parseEnergyInput();
+      const pad = { left: 58, right: 18, top: 22, bottom: 44 };
+      const plotW = w - pad.left - pad.right;
+      const plotH = h - pad.top - pad.bottom;
+
+      ctx.strokeStyle = '#d8d2c4';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, pad.top);
+      ctx.lineTo(pad.left, h - pad.bottom);
+      ctx.lineTo(w - pad.right, h - pad.bottom);
+      ctx.stroke();
+
+      ctx.fillStyle = '#5f6368';
+      ctx.font = '24px Segoe UI, sans-serif';
+      ctx.fillText('反応経路', w / 2 - 42, h - 12);
+      ctx.save();
+      ctx.translate(18, h / 2 + 34);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('相対エネルギー eV', 0, 0);
+      ctx.restore();
+
+      if (energies.length < 2) {
+        ctx.fillStyle = '#b25512';
+        ctx.font = '28px Segoe UI, sans-serif';
+        ctx.fillText('NEB結果は未入力', pad.left + 22, pad.top + 58);
+        ctx.fillStyle = '#5f6368';
+        ctx.font = '22px Segoe UI, sans-serif';
+        ctx.fillText('計算後の相対エネルギーを貼ると障壁を表示します', pad.left + 22, pad.top + 96);
+        document.getElementById('barrierText').textContent = '現在はDFT入力生成段階です。障壁値はNEB実行後に確定します。';
+        return;
+      }
+
+      const minE = Math.min(...energies, 0);
+      const maxE = Math.max(...energies, 0.1);
+      const range = Math.max(0.2, maxE - minE);
+      const toX = (i) => pad.left + (plotW * i) / (energies.length - 1);
+      const toY = (e) => h - pad.bottom - ((e - minE) / range) * plotH;
+
+      ctx.strokeStyle = '#52b788';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      energies.forEach((e, i) => {
+        const x = toX(i);
+        const y = toY(e);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      energies.forEach((e, i) => {
+        ctx.fillStyle = '#2d6cdf';
+        ctx.beginPath();
+        ctx.arc(toX(i), toY(e), 6, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      const barrier = maxE - energies[0];
+      ctx.fillStyle = '#202124';
+      ctx.font = '26px Segoe UI, sans-serif';
+      ctx.fillText(`障壁 ${barrier.toFixed(2)} eV`, pad.left + 16, pad.top + 34);
+      document.getElementById('barrierText').textContent = barrierComment(barrier);
+    }
+
+    function parseEnergyInput() {
+      const lines = document.getElementById('energyInput').value.split(/\r?\n/);
+      const values = [];
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const number = Number(trimmed.split(/[,\s]+/).pop());
+        if (Number.isFinite(number)) values.push(number);
+      }
+      return values;
+    }
+
+    function barrierComment(barrier) {
+      if (barrier < 0.3) return `障壁 ${barrier.toFixed(2)} eV。室温でも動きやすい候補です。`;
+      if (barrier < 1.0) return `障壁 ${barrier.toFixed(2)} eV。室温では遅めですが、照射や励起で現実味が出ます。`;
+      if (barrier < 2.5) return `障壁 ${barrier.toFixed(2)} eV。通常の室温熱拡散だけでは厳しく、電荷状態変化で下がるかが論点です。`;
+      return `障壁 ${barrier.toFixed(2)} eV。低エネルギー電子だけで頻繁に進む主過程とは考えにくい値です。`;
+    }
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      renderer.setSize(rect.width, rect.height, false);
+      camera.aspect = rect.width / Math.max(rect.height, 1);
+      camera.updateProjectionMatrix();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      flatCanvas.width = Math.max(1, Math.floor(rect.width * dpr));
+      flatCanvas.height = Math.max(1, Math.floor(rect.height * dpr));
+      if (flat2dMode) drawFlat2DScene(performance.now());
+      renderer.render(scene, camera);
+    }
+
+    function animate() {
+      renderer.render(scene, camera);
+      if (flat2dMode) drawFlat2DScene(performance.now());
+      requestAnimationFrame(animate);
+    }
+
+    let dragging = false;
+    let lastPointer = null;
+    canvas.addEventListener('pointerdown', (event) => {
+      dragging = true;
+      lastPointer = { x: event.clientX, y: event.clientY };
+      canvas.setPointerCapture(event.pointerId);
+    });
+    canvas.addEventListener('pointermove', (event) => {
+      if (!dragging || !lastPointer) return;
+      const dx = event.clientX - lastPointer.x;
+      const dy = event.clientY - lastPointer.y;
+      root.rotation.y += dx * 0.006;
+      root.rotation.x += dy * 0.006;
+      root.rotation.x = Math.max(-1.35, Math.min(1.35, root.rotation.x));
+      lastPointer = { x: event.clientX, y: event.clientY };
+    });
+    canvas.addEventListener('pointerup', () => {
+      dragging = false;
+      lastPointer = null;
+    });
+    canvas.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      camera.position.multiplyScalar(event.deltaY > 0 ? 1.07 : 0.93);
+      camera.position.clampLength(7, 34);
+      camera.lookAt(0, 0, 0);
+    }, { passive: false });
+    flatCanvas.addEventListener('click', advanceAnimationStep);
+
+    document.querySelectorAll('.scenario-tabs button').forEach(button => {
+      button.addEventListener('click', () => loadScenario(button.dataset.scenario));
+    });
+    document.querySelectorAll('.segmented button').forEach(button => {
+      button.addEventListener('click', () => setT(Number(button.dataset.state)));
+    });
+    pathSlider.addEventListener('input', () => setT(Number(pathSlider.value) / 100));
+    document.getElementById('stepBackBtn').addEventListener('click', () => setT(t - 0.05));
+    document.getElementById('stepForwardBtn').addEventListener('click', () => setT(t + 0.05));
+    document.getElementById('toggleConcept').addEventListener('click', () => setConceptMode(!conceptMode));
+    document.getElementById('restartConcept').addEventListener('click', restartConceptAnimation);
+    document.getElementById('toggleFlat2d').addEventListener('click', () => setFlat2dMode(!flat2dMode));
+    document.getElementById('restartFlat2d').addEventListener('click', restartFlat2dAnimation);
+    energySlider.addEventListener('input', () => {
+      updateBeamUI();
+      updateDepthTable();
+      if (conceptMode) {
+        lastConceptT = -1;
+        updateConceptAnimation(performance.now());
+      }
+      if (flat2dMode) drawFlat2DScene(performance.now());
+      updateUI();
+    });
+    amountSlider.addEventListener('input', () => {
+      updateBeamUI();
+      if (conceptMode) updateConceptAnimation(performance.now());
+      if (flat2dMode) drawFlat2DScene(performance.now());
+      updateUI();
+    });
+    playBtn.addEventListener('click', togglePlay);
+    document.getElementById('resetViewBtn').addEventListener('click', () => {
+      root.rotation.set(0, 0, 0);
+      camera.position.set(13, 11, 17);
+      camera.lookAt(0, 0, 0);
+    });
+    document.getElementById('energyInput').addEventListener('input', drawEnergyPlot);
+
+    const toggleButtons = {
+      toggleBonds: 'bonds',
+      toggleCell: 'cell',
+      toggleCarbon: 'carbon',
+      toggleVacancy: 'vacancy',
+      togglePath: 'path',
+    };
+    for (const [id, key] of Object.entries(toggleButtons)) {
+      document.getElementById(id).addEventListener('click', () => {
+        toggles[key] = !toggles[key];
+        updateModel();
+      });
+    }
+
+    window.addEventListener('resize', resize);
+    updateBeamUI();
+    updateDepthTable();
+    resize();
+    animate();
+    loadScenario(currentScenario);
+  </script>
+</body>
+</html>

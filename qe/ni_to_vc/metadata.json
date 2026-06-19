@@ -1,0 +1,45 @@
+{
+  "scenario": "ni_to_vc",
+  "meaning": "N interstitial near a carbon vacancy recombines into the vacancy.",
+  "vacancy_key": [
+    1,
+    1,
+    1,
+    0
+  ],
+  "bond_center_keys_initially_relaxed_outward": [
+    [
+      1,
+      1,
+      1,
+      4
+    ],
+    [
+      1,
+      1,
+      1,
+      1
+    ]
+  ],
+  "initial_target_C_N_distance_angstrom": 1.35,
+  "initial_actual_C_N_distance_angstrom": [
+    1.3500000000000003,
+    1.3500000000000003
+  ],
+  "initial_N_position_angstrom": [
+    4.012875,
+    4.904625,
+    4.904625
+  ],
+  "final_N_position_angstrom": [
+    3.567,
+    3.567,
+    3.567
+  ],
+  "warning": "With only one vacancy, the final state is substitutional nitrogen, not an NV center. A second adjacent vacancy is needed for NV.",
+  "supercell": "3x3x3",
+  "cell_length_angstrom": 10.701,
+  "charge": 0,
+  "nat": 216,
+  "quantum_espresso_note": "Relax endpoints first; then update NEB FIRST_IMAGE/LAST_IMAGE with relaxed coordinates before final production runs."
+}

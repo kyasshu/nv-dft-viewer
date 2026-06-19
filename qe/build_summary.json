@@ -1,0 +1,19 @@
+{
+  "created_scenarios": [
+    "ni_to_vc",
+    "ns_to_divacancy",
+    "vacancy_hop_to_nv"
+  ],
+  "supercell": 3,
+  "lattice_constant_angstrom": 3.567,
+  "cell_length_angstrom": 10.701,
+  "charge": 0,
+  "files": [
+    "initial.xyz",
+    "final.xyz",
+    "relax_initial.in",
+    "relax_final.in",
+    "neb.in",
+    "metadata.json"
+  ]
+}
