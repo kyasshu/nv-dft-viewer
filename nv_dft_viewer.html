@@ -61,6 +61,7 @@
       display: grid;
       place-items: center;
       padding: 28px;
+      overflow: auto;
       color: #16191d;
       background:
         radial-gradient(circle at 18% 18%, rgba(242, 201, 76, 0.24), transparent 34%),
@@ -77,6 +78,7 @@
 
     .splash-inner {
       width: min(980px, 100%);
+      margin: auto 0;
       display: grid;
       grid-template-columns: minmax(260px, 0.9fr) minmax(280px, 1.1fr);
       align-items: center;
@@ -256,6 +258,161 @@
     .start-button:active {
       transform: translate(4px, 4px);
       box-shadow: 1px 1px 0 #202124;
+    }
+
+    .login-panel {
+      width: min(560px, 100%);
+      display: grid;
+      gap: 12px;
+      margin-top: 4px;
+      padding: 14px;
+      border: 1px solid #d9dee5;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .login-panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .login-panel h2 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.25;
+    }
+
+    .today-stamp {
+      min-height: 28px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 10px;
+      border: 1px solid #202124;
+      border-radius: 999px;
+      background: #f2c94c;
+      color: #202124;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .calendar-controls {
+      display: grid;
+      grid-template-columns: 34px 1fr 34px;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .calendar-controls button,
+    .share-button {
+      min-height: 34px;
+      border: 1px solid #c8d0d8;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #202124;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .calendar-title {
+      text-align: center;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .calendar-weekdays,
+    .login-calendar {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 5px;
+    }
+
+    .calendar-weekdays span {
+      color: #667080;
+      font-size: 11px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .calendar-day {
+      position: relative;
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: 1px solid #dde3ea;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #202124;
+      font-size: 12px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .calendar-day.other-month {
+      color: #a4adb6;
+      background: #f8fafb;
+    }
+
+    .calendar-day.today {
+      border-color: #2d6cdf;
+    }
+
+    .calendar-day.selected {
+      outline: 2px solid #202124;
+      outline-offset: 1px;
+    }
+
+    .calendar-day.stamped::after {
+      content: "済";
+      position: absolute;
+      right: 3px;
+      bottom: 3px;
+      width: 19px;
+      height: 19px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #b25512;
+      border-radius: 50%;
+      color: #b25512;
+      background: rgba(242, 201, 76, 0.24);
+      font-size: 10px;
+      font-weight: 900;
+      transform: rotate(-12deg);
+    }
+
+    .login-note-label {
+      display: grid;
+      gap: 6px;
+      color: #3d4650;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .login-note {
+      min-height: 62px;
+      resize: vertical;
+      padding: 8px 10px;
+      border: 1px solid #c8d0d8;
+      border-radius: 8px;
+      background: #ffffff;
+      color: #202124;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .login-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .share-status {
+      color: #667080;
+      font-size: 12px;
+      line-height: 1.4;
     }
 
     .stage {
@@ -945,6 +1102,29 @@
         <h1>NV中心 DFTモデル解析ビューア</h1>
         <p class="splash-message">おつかれさま。スタートを押したら、ダイヤモンド中の欠陥再構成をいっしょに見ていきます。</p>
         <button id="startViewerBtn" class="start-button" type="button">スタート</button>
+        <section class="login-panel" aria-label="login bonus calendar">
+          <div class="login-panel-head">
+            <h2>ログインボーナス</h2>
+            <span id="todayStamp" class="today-stamp">今日のスタンプ</span>
+          </div>
+          <div class="calendar-controls">
+            <button id="prevMonthBtn" type="button" aria-label="前の月">‹</button>
+            <div id="calendarTitle" class="calendar-title">-</div>
+            <button id="nextMonthBtn" type="button" aria-label="次の月">›</button>
+          </div>
+          <div class="calendar-weekdays" aria-hidden="true">
+            <span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span>
+          </div>
+          <div id="loginCalendar" class="login-calendar"></div>
+          <label class="login-note-label" for="dailyNote">
+            <span id="dailyNoteLabel">今日やったこと</span>
+            <textarea id="dailyNote" class="login-note" placeholder="例: V1/V2を最近接配置に直した。"></textarea>
+          </label>
+          <div class="login-actions">
+            <button id="shareCalendarBtn" class="share-button" type="button">共有URLをコピー</button>
+            <span id="shareStatus" class="share-status">スタンプとメモはこのブラウザに保存されます。</span>
+          </div>
+        </section>
       </div>
     </div>
   </section>
@@ -2795,6 +2975,161 @@ low-E surface model: Geh(z) = G0 exp(-z/lambda_e)</code>
       });
     }
 
+    const LOGIN_STORE_KEY = 'nvDftLoginCalendar.v1';
+    const LOGIN_HASH_PREFIX = 'login=';
+    let loginData = { entries: {} };
+    let selectedLoginDate = '';
+    let calendarMonth = { year: 2026, month: 6 };
+
+    function japanDateParts(date = new Date()) {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Tokyo',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).formatToParts(date);
+      const map = Object.fromEntries(parts.map(part => [part.type, part.value]));
+      return {
+        year: Number(map.year),
+        month: Number(map.month),
+        day: Number(map.day),
+      };
+    }
+
+    function dateKey(year, month, day) {
+      return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    }
+
+    function parseDateKey(key) {
+      const [year, month, day] = key.split('-').map(Number);
+      return { year, month, day };
+    }
+
+    function encodeLoginPayload(data) {
+      const json = JSON.stringify({ v: 1, entries: data.entries || {} });
+      const bytes = new TextEncoder().encode(json);
+      let binary = '';
+      bytes.forEach(byte => { binary += String.fromCharCode(byte); });
+      return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+    }
+
+    function decodeLoginPayload(text) {
+      const padded = text.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((text.length + 3) % 4);
+      const binary = atob(padded);
+      const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+      const parsed = JSON.parse(new TextDecoder().decode(bytes));
+      return parsed && parsed.entries ? { entries: parsed.entries } : { entries: {} };
+    }
+
+    function loadLoginData() {
+      try {
+        loginData = JSON.parse(localStorage.getItem(LOGIN_STORE_KEY)) || { entries: {} };
+      } catch {
+        loginData = { entries: {} };
+      }
+      if (!loginData.entries) loginData.entries = {};
+
+      const hash = window.location.hash.replace(/^#/, '');
+      if (hash.startsWith(LOGIN_HASH_PREFIX)) {
+        try {
+          const shared = decodeLoginPayload(hash.slice(LOGIN_HASH_PREFIX.length));
+          loginData.entries = { ...loginData.entries, ...shared.entries };
+          localStorage.setItem(LOGIN_STORE_KEY, JSON.stringify(loginData));
+          document.getElementById('shareStatus').textContent = '共有URLのスタンプを読み込みました。';
+        } catch {
+          document.getElementById('shareStatus').textContent = '共有URLの読み込みに失敗しました。';
+        }
+      }
+    }
+
+    function saveLoginData() {
+      localStorage.setItem(LOGIN_STORE_KEY, JSON.stringify(loginData));
+    }
+
+    function stampToday() {
+      const today = japanDateParts();
+      const key = dateKey(today.year, today.month, today.day);
+      if (!loginData.entries[key]) loginData.entries[key] = { stamped: true, note: '' };
+      loginData.entries[key].stamped = true;
+      selectedLoginDate = key;
+      calendarMonth = { year: today.year, month: today.month };
+      document.getElementById('todayStamp').textContent = `${key} 済`;
+      saveLoginData();
+    }
+
+    function shiftCalendarMonth(delta) {
+      const next = new Date(calendarMonth.year, calendarMonth.month - 1 + delta, 1);
+      calendarMonth = { year: next.getFullYear(), month: next.getMonth() + 1 };
+      renderLoginCalendar();
+    }
+
+    function setSelectedLoginDate(key) {
+      selectedLoginDate = key;
+      const entry = loginData.entries[key] || { stamped: false, note: '' };
+      document.getElementById('dailyNote').value = entry.note || '';
+      document.getElementById('dailyNoteLabel').textContent = `${key} にやったこと`;
+      renderLoginCalendar();
+    }
+
+    function renderLoginCalendar() {
+      const title = document.getElementById('calendarTitle');
+      const grid = document.getElementById('loginCalendar');
+      const today = japanDateParts();
+      const todayKey = dateKey(today.year, today.month, today.day);
+      title.textContent = `${calendarMonth.year}年 ${calendarMonth.month}月`;
+      grid.innerHTML = '';
+
+      const first = new Date(calendarMonth.year, calendarMonth.month - 1, 1);
+      const start = new Date(calendarMonth.year, calendarMonth.month - 1, 1 - first.getDay());
+      for (let i = 0; i < 42; i += 1) {
+        const date = new Date(start);
+        date.setDate(start.getDate() + i);
+        const key = dateKey(date.getFullYear(), date.getMonth() + 1, date.getDate());
+        const entry = loginData.entries[key];
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'calendar-day';
+        if (date.getMonth() + 1 !== calendarMonth.month) button.classList.add('other-month');
+        if (key === todayKey) button.classList.add('today');
+        if (key === selectedLoginDate) button.classList.add('selected');
+        if (entry && entry.stamped) button.classList.add('stamped');
+        button.textContent = String(date.getDate());
+        button.setAttribute('aria-label', `${key}${entry?.stamped ? ' stamped' : ''}`);
+        button.addEventListener('click', () => setSelectedLoginDate(key));
+        grid.appendChild(button);
+      }
+    }
+
+    function updateSelectedLoginNote(value) {
+      if (!loginData.entries[selectedLoginDate]) loginData.entries[selectedLoginDate] = { stamped: true, note: '' };
+      loginData.entries[selectedLoginDate].stamped = true;
+      loginData.entries[selectedLoginDate].note = value;
+      saveLoginData();
+      renderLoginCalendar();
+    }
+
+    async function copyLoginShareUrl() {
+      const encoded = encodeLoginPayload(loginData);
+      const url = `${window.location.origin}${window.location.pathname}#${LOGIN_HASH_PREFIX}${encoded}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        document.getElementById('shareStatus').textContent = '共有URLをコピーしました。';
+      } catch {
+        window.location.hash = `${LOGIN_HASH_PREFIX}${encoded}`;
+        document.getElementById('shareStatus').textContent = 'URL欄に共有データを入れました。';
+      }
+    }
+
+    function initLoginCalendar() {
+      loadLoginData();
+      stampToday();
+      setSelectedLoginDate(selectedLoginDate);
+      document.getElementById('prevMonthBtn').addEventListener('click', () => shiftCalendarMonth(-1));
+      document.getElementById('nextMonthBtn').addEventListener('click', () => shiftCalendarMonth(1));
+      document.getElementById('dailyNote').addEventListener('input', event => updateSelectedLoginNote(event.target.value));
+      document.getElementById('shareCalendarBtn').addEventListener('click', copyLoginShareUrl);
+    }
+
     window.addEventListener('resize', resize);
     document.getElementById('startViewerBtn').addEventListener('click', () => {
       document.body.classList.remove('title-active');
@@ -2804,6 +3139,7 @@ low-E surface model: Geh(z) = G0 exp(-z/lambda_e)</code>
     });
     updateBeamUI();
     updateDepthTable();
+    initLoginCalendar();
     resize();
     animate();
     loadScenario(currentScenario);
