@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 440" role="img" aria-labelledby="title desc">
+  <title id="title">Diamond defect simulation map</title>
+  <desc id="desc">Stylized diamond lattice with nitrogen, vacancies, and electron excitation.</desc>
+  <defs>
+    <linearGradient id="plate" x1="70" y1="30" x2="570" y2="410" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f7fbff"/>
+      <stop offset="0.52" stop-color="#edf8ff"/>
+      <stop offset="1" stop-color="#fff8dc"/>
+    </linearGradient>
+    <linearGradient id="bond" x1="170" y1="112" x2="470" y2="330" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#74c7ff"/>
+      <stop offset="1" stop-color="#4453ff"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="14" flood-color="#1c2d55" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+
+  <rect x="30" y="24" width="580" height="392" rx="34" fill="url(#plate)" stroke="#c7dcf2" stroke-width="2"/>
+  <path d="M157 118 245 78 347 120 459 84 520 178 433 227 489 327 374 360 280 314 170 356 118 250Z" fill="none" stroke="#d8e6f3" stroke-width="2"/>
+  <g fill="none" stroke="url(#bond)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.82">
+    <path d="M157 118 258 168 347 120 433 227 520 178"/>
+    <path d="M258 168 280 314 374 360 433 227"/>
+    <path d="M157 118 118 250 280 314"/>
+    <path d="M118 250 236 238 258 168"/>
+    <path d="M236 238 374 360"/>
+    <path d="M347 120 459 84 520 178"/>
+    <path d="M245 78 347 120"/>
+    <path d="M170 356 280 314"/>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <g fill="#dfe8f2" stroke="#718096" stroke-width="2">
+      <circle cx="157" cy="118" r="18"/>
+      <circle cx="245" cy="78" r="16"/>
+      <circle cx="347" cy="120" r="17"/>
+      <circle cx="459" cy="84" r="15"/>
+      <circle cx="520" cy="178" r="17"/>
+      <circle cx="118" cy="250" r="17"/>
+      <circle cx="236" cy="238" r="15"/>
+      <circle cx="280" cy="314" r="17"/>
+      <circle cx="374" cy="360" r="18"/>
+      <circle cx="170" cy="356" r="15"/>
+    </g>
+    <circle cx="258" cy="168" r="25" fill="#3d8cff" stroke="#123a7a" stroke-width="3"/>
+    <circle cx="433" cy="227" r="25" fill="#ffffff" stroke="#e24a72" stroke-width="5"/>
+    <circle cx="347" cy="260" r="23" fill="#ffffff" stroke="#e24a72" stroke-width="5"/>
+    <path d="M379 152c48 19 74 48 81 94" fill="none" stroke="#ffd75b" stroke-width="11" stroke-linecap="round" opacity="0.75"/>
+    <path d="M396 136 434 160 391 179Z" fill="#ffd75b" opacity="0.88"/>
+  </g>
+
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="800" text-anchor="middle">
+    <text x="258" y="175" fill="#ffffff">N_i</text>
+    <text x="433" y="234" fill="#d82755">V1</text>
+    <text x="347" y="267" fill="#d82755">V2</text>
+  </g>
+</svg>

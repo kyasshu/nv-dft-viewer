@@ -1,0 +1,3081 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ミニゲーム | NV center training</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23ffe066'/%3E%3Ccircle cx='12' cy='16' r='5' fill='%232d6cdf'/%3E%3Ccircle cx='21' cy='16' r='5' fill='none' stroke='%23202124' stroke-width='3'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #202124;
+      --muted: #5f6368;
+      --game-pink: #ff4fb3;
+      --game-orange: #ff9d3d;
+      --game-yellow: #ffe25c;
+      --game-cyan: #35c7ff;
+      --game-blue: #4f7dff;
+      --game-violet: #8c6bff;
+      --game-navy: #24304f;
+      --glass: rgba(255, 255, 255, 0.76);
+      --line: rgba(79, 125, 255, 0.24);
+      --shadow: 0 18px 48px rgba(53, 86, 166, 0.2), 0 8px 18px rgba(255, 79, 179, 0.12);
+      font-family: "Segoe UI", "Yu Gothic UI", "Hiragino Sans", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      color: var(--ink);
+      overflow-x: hidden;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.60), rgba(255,255,255,0.72)),
+        url("../assets/minigames/bg-panels.png") center / cover fixed,
+        radial-gradient(circle at 14% 10%, rgba(255,157,61,0.34), transparent 30%),
+        radial-gradient(circle at 88% 16%, rgba(255,79,179,0.26), transparent 28%),
+        radial-gradient(circle at 76% 88%, rgba(53,199,255,0.18), transparent 30%),
+        linear-gradient(135deg, #fff8e7 0%, #ffffff 48%, #eff8ff 100%);
+    }
+
+    body.playing {
+      overflow: hidden;
+    }
+
+    img { max-width: 100%; display: block; }
+
+    .shell {
+      width: min(1120px, calc(100% - 28px));
+      min-height: 100dvh;
+      margin: 0 auto;
+      padding: 22px 0 max(28px, env(safe-area-inset-bottom));
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 18px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .kicker {
+      width: fit-content;
+      margin: 0 0 8px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--game-orange), var(--game-pink));
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+      box-shadow: 0 8px 18px rgba(255, 111, 83, 0.24);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 7vw, 64px);
+      line-height: 0.96;
+      letter-spacing: 0;
+      color: var(--game-navy);
+      text-shadow: 3px 3px 0 rgba(255, 226, 92, 0.95), 6px 6px 0 rgba(255, 79, 179, 0.16);
+    }
+
+    .top-link {
+      min-height: 40px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(79, 125, 255, 0.28);
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ffffff, #eef8ff);
+      color: var(--game-blue);
+      font-weight: 900;
+      text-decoration: none;
+      box-shadow: 0 8px 18px rgba(79, 125, 255, 0.16);
+      white-space: nowrap;
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .host-panel {
+      position: relative;
+      z-index: 1;
+      min-height: 178px;
+      margin-bottom: 12px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(180px, 280px);
+      align-items: stretch;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.62);
+      border-radius: 16px;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,0.88), rgba(255,255,255,0.40)),
+        linear-gradient(135deg, rgba(255,79,179,0.30), rgba(255,226,92,0.24), rgba(53,199,255,0.20));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .host-copy {
+      position: relative;
+      z-index: 2;
+      padding: 18px;
+      display: grid;
+      align-content: center;
+      gap: 8px;
+    }
+
+    .host-copy b {
+      width: fit-content;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--game-pink), var(--game-orange));
+      color: #fff;
+      font-size: 12px;
+      font-weight: 1000;
+      box-shadow: 0 10px 18px rgba(255,79,179,0.18);
+    }
+
+    .host-copy span {
+      color: var(--game-navy);
+      font-size: clamp(28px, 5vw, 52px);
+      font-weight: 1000;
+      line-height: 0.96;
+      text-shadow: 3px 3px 0 rgba(255,226,92,0.92), 6px 6px 0 rgba(255,79,179,0.18);
+    }
+
+    .host-copy p {
+      margin: 0;
+      color: #334155;
+      font-size: 15px;
+      font-weight: 850;
+      line-height: 1.5;
+    }
+
+    .host-idol {
+      width: 100%;
+      height: 100%;
+      min-height: 178px;
+      object-fit: cover;
+      object-position: center 34%;
+      filter: saturate(1.08) contrast(1.04);
+    }
+
+    .daily-summary {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .daily-card {
+      min-height: 58px;
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,0.66);
+      border-radius: 12px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.82), rgba(255,255,255,0.58)),
+        linear-gradient(135deg, rgba(255,226,92,0.34), rgba(53,199,255,0.20));
+      box-shadow: 0 10px 22px rgba(36,48,79,0.12);
+      backdrop-filter: blur(12px);
+    }
+
+    .daily-card b {
+      display: block;
+      color: var(--game-navy);
+      font-size: 12px;
+      line-height: 1.1;
+    }
+
+    .daily-card span {
+      display: block;
+      margin-top: 5px;
+      color: var(--game-blue);
+      font-size: 19px;
+      font-weight: 1000;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .game-grid {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.48), rgba(255,255,255,0.32)),
+        radial-gradient(circle at 18% 0%, rgba(255, 226, 92, 0.42), transparent 34%),
+        radial-gradient(circle at 82% 12%, rgba(255, 79, 179, 0.28), transparent 32%),
+        rgba(255, 255, 255, 0.34);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      overflow: hidden;
+    }
+
+    .idea-section {
+      position: relative;
+      z-index: 1;
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid rgba(79, 125, 255, 0.18);
+      border-radius: 14px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.58), rgba(255,255,255,0.30)),
+        rgba(255,255,255,0.24);
+      box-shadow: 0 14px 32px rgba(53, 86, 166, 0.14);
+      backdrop-filter: blur(14px);
+    }
+
+    .idea-title {
+      margin: 0 0 10px;
+      color: var(--game-navy);
+      font-size: 15px;
+      font-weight: 1000;
+    }
+
+    .idea-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .idea-card {
+      position: relative;
+      min-height: 118px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.68);
+      border-radius: 10px;
+      background:
+        linear-gradient(180deg, rgba(8,16,40,0.02), rgba(8,16,40,0.36)),
+        var(--idea-bg) center / cover,
+        linear-gradient(135deg, rgba(255,226,92,0.24), rgba(255,79,179,0.18));
+      box-shadow: 0 12px 24px rgba(36,48,79,0.14);
+      cursor: pointer;
+      transition: transform 160ms ease, filter 160ms ease;
+    }
+
+    .idea-card:hover {
+      transform: translateY(-2px);
+      filter: saturate(1.12) contrast(1.05);
+    }
+
+    .idea-card b,
+    .idea-card span {
+      position: absolute;
+      z-index: 2;
+      left: 10px;
+      right: 10px;
+      color: #fff;
+      text-shadow: 0 3px 12px rgba(8,16,40,0.46);
+    }
+
+    .idea-card b {
+      bottom: 32px;
+      font-size: 15px;
+      font-weight: 1000;
+      line-height: 1.15;
+    }
+
+    .idea-card span {
+      bottom: 10px;
+      font-size: 10px;
+      font-weight: 1000;
+      opacity: 0.92;
+    }
+
+    .idea-card::after {
+      content: "IDEA";
+      position: absolute;
+      z-index: 2;
+      top: 8px;
+      left: 8px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(255,79,179,0.86);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 1000;
+    }
+
+    .game-grid::before {
+      content: "";
+      position: absolute;
+      inset: -25% -10%;
+      background:
+        repeating-linear-gradient(110deg, rgba(255,255,255,0.14) 0 2px, transparent 2px 34px),
+        radial-gradient(circle at 50% 50%, rgba(53,199,255,0.18), transparent 46%);
+      animation: select-shimmer 7s linear infinite;
+      pointer-events: none;
+    }
+
+    .image-card,
+    .choice-card {
+      position: relative;
+      min-height: 184px;
+      border: 1px solid rgba(79, 125, 255, 0.28);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      user-select: none;
+      touch-action: manipulation;
+      background:
+        linear-gradient(180deg, rgba(8,16,40,0.02), rgba(8,16,40,0.18)),
+        var(--card-bg),
+        linear-gradient(135deg, rgba(255, 226, 92, 0.2), rgba(53, 199, 255, 0.16));
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 16px 34px rgba(53, 86, 166, 0.16), 0 6px 14px rgba(255, 79, 179, 0.10);
+      transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+    }
+
+    .image-card::before,
+    .choice-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(8,16,40,0.02) 44%, rgba(8,16,40,0.28) 100%);
+      pointer-events: none;
+    }
+
+    .image-card::after,
+    .choice-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 1px solid rgba(255,255,255,0.72);
+      border-radius: 8px;
+      pointer-events: none;
+    }
+
+    .image-card:active,
+    .choice-card:active {
+      transform: translateY(2px) scale(0.99);
+    }
+
+    .image-card:hover,
+    .choice-card:hover {
+      transform: translateY(-3px);
+      filter: saturate(1.14) contrast(1.04);
+      box-shadow: 0 22px 42px rgba(53, 86, 166, 0.24), 0 8px 18px rgba(255, 79, 179, 0.18);
+    }
+
+    .new-badge {
+      position: absolute;
+      z-index: 2;
+      top: 10px;
+      left: 10px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--game-pink), var(--game-orange));
+      color: #fff;
+      font-size: 12px;
+      font-weight: 1000;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.16);
+    }
+
+    .card-title {
+      position: absolute;
+      z-index: 2;
+      left: 10px;
+      right: 10px;
+      bottom: 34px;
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 12px;
+      border-radius: 8px;
+      background: rgba(36, 48, 79, 0.9);
+      color: #fff;
+      font-size: 17px;
+      font-weight: 1000;
+      line-height: 1.15;
+      text-align: center;
+      box-shadow: 0 8px 18px rgba(36, 48, 79, 0.2);
+    }
+
+    .card-meta {
+      position: absolute;
+      z-index: 2;
+      left: 12px;
+      right: 12px;
+      bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 1000;
+      text-shadow: 0 2px 8px rgba(8,16,40,0.42);
+    }
+
+    .card-meta span {
+      min-height: 20px;
+      padding: 2px 8px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      background: rgba(36, 48, 79, 0.72);
+      backdrop-filter: blur(8px);
+    }
+
+    @keyframes select-shimmer {
+      from { transform: translateX(-4%); }
+      to { transform: translateX(4%); }
+    }
+
+    .lobby-layout,
+    .howto-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .play-layout {
+      display: block;
+    }
+
+    .preview-panel,
+    .howto-panel,
+    .arena,
+    .hud {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.82);
+      box-shadow: var(--shadow);
+    }
+
+    .preview-panel {
+      min-height: 520px;
+      position: relative;
+      display: grid;
+      align-items: end;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.05), rgba(20,26,58,0.52)),
+        var(--preview-bg);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .preview-chibi {
+      position: absolute;
+      right: clamp(18px, 4vw, 54px);
+      bottom: 18px;
+      width: min(280px, 45%);
+      border-radius: 20px;
+      box-shadow: 0 18px 28px rgba(20, 26, 58, 0.24);
+    }
+
+    .preview-title {
+      position: relative;
+      z-index: 2;
+      margin: 0;
+      padding: 20px;
+      color: #fff;
+      font-size: clamp(34px, 7vw, 72px);
+      line-height: 0.94;
+      text-shadow: 0 4px 16px rgba(20, 26, 58, 0.42), 3px 3px 0 rgba(255, 79, 179, 0.42);
+    }
+
+    .choice-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .choice-card {
+      min-height: 118px;
+      display: grid;
+      align-items: end;
+    }
+
+    .choice-card .card-title {
+      font-size: 22px;
+    }
+
+    .howto-panel {
+      display: grid;
+      background: rgba(255,255,255,0.9);
+    }
+
+    .howto-image {
+      width: 100%;
+      height: min(520px, 58dvh);
+      object-fit: cover;
+      background: #fff;
+    }
+
+    .howto-copy {
+      padding: 16px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .howto-copy h2,
+    .hud h2 {
+      margin: 0;
+      color: var(--game-navy);
+      font-size: 26px;
+    }
+
+    .howto-copy ol {
+      margin: 0;
+      padding-left: 22px;
+      color: #334155;
+      font-weight: 750;
+      line-height: 1.6;
+    }
+
+    .arena {
+      position: relative;
+      min-height: 590px;
+      touch-action: none;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .arena::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(8,16,40,0.18));
+      pointer-events: none;
+    }
+
+    .hud {
+      padding: 14px;
+      display: grid;
+      align-content: start;
+      gap: 12px;
+    }
+
+    .stage-hud {
+      position: absolute;
+      left: 14px;
+      right: auto;
+      top: max(14px, env(safe-area-inset-top));
+      bottom: auto;
+      z-index: 8;
+      display: grid;
+      gap: 8px;
+      width: min(470px, calc(100vw - 210px));
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      backdrop-filter: none;
+      pointer-events: none;
+    }
+
+    .stage-hud h2,
+    .stage-hud .mini-asset-grid {
+      display: none;
+    }
+
+    .stage-hud .metric-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .lesson-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 12;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 50% 44%, rgba(255,255,255,0.72), transparent 28%),
+        linear-gradient(180deg, rgba(8,16,40,0.12), rgba(8,16,40,0.42));
+      pointer-events: none;
+      animation: lesson-overlay-out 1180ms cubic-bezier(.18,.82,.22,1) forwards;
+    }
+
+    .lesson-card {
+      position: relative;
+      display: grid;
+      gap: 8px;
+      justify-items: center;
+      transform-origin: 50% 52%;
+      animation: lesson-card-pop 1180ms cubic-bezier(.18,.82,.22,1) forwards;
+    }
+
+    .lesson-main {
+      color: #fff;
+      font-size: clamp(44px, 10vw, 118px);
+      font-weight: 1000;
+      line-height: 0.88;
+      text-align: center;
+      text-shadow:
+        4px 4px 0 rgba(255, 79, 179, 0.95),
+        8px 8px 0 rgba(255, 226, 92, 0.9),
+        0 18px 36px rgba(8,16,40,0.44);
+    }
+
+    .lesson-sub {
+      min-height: 34px;
+      padding: 5px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.88);
+      color: var(--game-navy);
+      font-size: clamp(14px, 2.2vw, 20px);
+      font-weight: 1000;
+      box-shadow: 0 14px 30px rgba(36,48,79,0.2);
+    }
+
+    .result-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 14;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background:
+        radial-gradient(circle at 50% 36%, rgba(255,255,255,0.65), transparent 28%),
+        linear-gradient(180deg, rgba(8,16,40,0.18), rgba(8,16,40,0.62));
+    }
+
+    .result-panel {
+      position: relative;
+      width: min(480px, 92vw);
+      display: grid;
+      gap: 12px;
+      justify-items: center;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,0.62);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.78);
+      box-shadow: 0 24px 50px rgba(8,16,40,0.28);
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    .result-panel::before {
+      content: "";
+      position: absolute;
+      inset: -35% -15% auto;
+      height: 64%;
+      background:
+        radial-gradient(circle at 35% 48%, rgba(255,226,92,0.42), transparent 34%),
+        radial-gradient(circle at 66% 46%, rgba(255,79,179,0.28), transparent 34%);
+      pointer-events: none;
+    }
+
+    .result-rank {
+      position: relative;
+      color: var(--game-navy);
+      font-size: clamp(42px, 10vw, 86px);
+      font-weight: 1000;
+      line-height: 0.9;
+      text-shadow: 3px 3px 0 rgba(255,226,92,0.95), 6px 6px 0 rgba(255,79,179,0.22);
+    }
+
+    .result-idol {
+      position: relative;
+      width: min(168px, 42vw);
+      height: min(168px, 42vw);
+      border: 3px solid rgba(255,255,255,0.86);
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center 22%;
+      filter: drop-shadow(0 18px 20px rgba(8,16,40,0.2));
+      animation: result-idol-pop 620ms cubic-bezier(.16,.84,.28,1) both;
+    }
+
+    .result-comment {
+      position: relative;
+      margin: -4px 0 0;
+      width: min(390px, 100%);
+      padding: 10px 14px;
+      border: 1px solid rgba(79,125,255,0.2);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.82);
+      color: var(--game-navy);
+      font-size: 15px;
+      font-weight: 950;
+      line-height: 1.45;
+      text-align: center;
+      box-shadow: 0 12px 24px rgba(36,48,79,0.12);
+    }
+
+    .result-lines {
+      position: relative;
+      margin: 0;
+      color: #334155;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.55;
+    }
+
+    .result-actions {
+      position: relative;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      pointer-events: auto;
+    }
+
+    .result-actions .mini-chip {
+      background: linear-gradient(135deg, #ffffff, #eef8ff);
+    }
+
+    @keyframes lesson-overlay-out {
+      0%, 76% { opacity: 1; }
+      100% { opacity: 0; visibility: hidden; }
+    }
+
+    @keyframes lesson-card-pop {
+      0% { transform: scale(0.58) rotate(-5deg); opacity: 0; }
+      22% { transform: scale(1.14) rotate(2deg); opacity: 1; }
+      42% { transform: scale(0.98) rotate(0deg); }
+      78% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(0.82); opacity: 0; }
+    }
+
+    @keyframes result-idol-pop {
+      0% { opacity: 0; transform: translateY(28px) scale(0.82); }
+      58% { opacity: 1; transform: translateY(-8px) scale(1.06); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .float-text {
+      position: absolute;
+      z-index: 9;
+      left: var(--float-x, 50%);
+      top: var(--float-y, 50%);
+      transform: translate(-50%, -50%);
+      color: #fff;
+      font-size: clamp(20px, 4.2vw, 42px);
+      font-weight: 1000;
+      line-height: 1;
+      text-shadow:
+        3px 3px 0 rgba(255,79,179,0.86),
+        0 12px 22px rgba(8,16,40,0.24);
+      pointer-events: none;
+      animation: float-pop 720ms cubic-bezier(.16,.84,.28,1) forwards;
+    }
+
+    .float-text.good {
+      text-shadow:
+        3px 3px 0 rgba(53,199,255,0.88),
+        0 12px 22px rgba(8,16,40,0.24);
+    }
+
+    .float-text.bad {
+      text-shadow:
+        3px 3px 0 rgba(255,157,61,0.92),
+        0 12px 22px rgba(8,16,40,0.24);
+    }
+
+    @keyframes float-pop {
+      0% { opacity: 0; transform: translate(-50%, 10px) scale(0.76); }
+      18% { opacity: 1; transform: translate(-50%, -10px) scale(1.12); }
+      100% { opacity: 0; transform: translate(-50%, -64px) scale(0.96); }
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .metric,
+    .status {
+      padding: 8px 9px;
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 10px;
+      background: rgba(14, 24, 52, 0.58);
+      color: rgba(255,255,255,0.84);
+      font-weight: 900;
+      line-height: 1.35;
+      box-shadow: 0 12px 20px rgba(8,16,40,0.16);
+      backdrop-filter: blur(12px);
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 4px;
+      color: #fff;
+      font-size: 20px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stage-hud .status {
+      width: fit-content;
+      max-width: min(440px, calc(100vw - 32px));
+      background: rgba(255,79,179,0.60);
+      color: #fff;
+    }
+
+    .coach-badge {
+      position: absolute;
+      z-index: 7;
+      left: 14px;
+      bottom: max(14px, env(safe-area-inset-bottom));
+      display: grid;
+      grid-template-columns: 62px minmax(0, 1fr);
+      align-items: center;
+      gap: 10px;
+      width: min(360px, calc(100vw - 28px));
+      padding: 8px 11px 8px 8px;
+      border: 1px solid rgba(255,255,255,0.24);
+      border-radius: 999px;
+      background: rgba(14, 24, 52, 0.48);
+      box-shadow: 0 14px 26px rgba(8,16,40,0.18);
+      backdrop-filter: blur(14px);
+      pointer-events: none;
+    }
+
+    .coach-badge img {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(255,255,255,0.72);
+      box-shadow: 0 10px 18px rgba(8,16,40,0.18);
+    }
+
+    .coach-badge b {
+      display: block;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 1000;
+      line-height: 1.1;
+      text-shadow: 0 2px 8px rgba(8,16,40,0.26);
+    }
+
+    .coach-badge span {
+      display: block;
+      margin-top: 3px;
+      color: rgba(255,255,255,0.86);
+      font-size: 11px;
+      font-weight: 850;
+      line-height: 1.25;
+    }
+
+    .mini-asset-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .mini-asset-grid img {
+      aspect-ratio: 1;
+      object-fit: cover;
+      border: 1px solid rgba(79, 125, 255, 0.18);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .runner-stage {
+      background-image: url("../assets/minigames/crops/runner-bg.png");
+      overflow: hidden;
+      perspective: 780px;
+    }
+
+    .runner-horizon {
+      position: absolute;
+      left: 50%;
+      top: 8%;
+      z-index: 2;
+      transform: translateX(-50%);
+      min-width: min(420px, 78vw);
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.72);
+      color: var(--game-navy);
+      text-align: center;
+      font-size: clamp(14px, 2.4vw, 22px);
+      font-weight: 1000;
+      box-shadow: 0 14px 30px rgba(36,48,79,0.16);
+      backdrop-filter: blur(12px);
+    }
+
+    .runner-floor {
+      position: absolute;
+      left: 50%;
+      bottom: -10%;
+      width: 112%;
+      height: 88%;
+      transform: translateX(-50%) rotateX(58deg);
+      transform-origin: 50% 100%;
+      background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.0) 0 12%, rgba(255,255,255,0.42) 12.5% 13.3%, rgba(255,255,255,0.0) 14% 33%),
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.28) 0 3px, transparent 3px 58px),
+        linear-gradient(180deg, rgba(53,199,255,0.08), rgba(255,79,179,0.18));
+      clip-path: polygon(38% 0%, 62% 0%, 100% 100%, 0% 100%);
+      pointer-events: none;
+      animation: runner-floor-flow 900ms linear infinite;
+    }
+
+    .runner-road-lines {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 49.4%, rgba(255,255,255,0.82) 49.8% 50.2%, transparent 50.6%),
+        linear-gradient(180deg, transparent, rgba(255,255,255,0.2));
+      clip-path: polygon(30% 6%, 70% 6%, 100% 100%, 0% 100%);
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.78;
+      mix-blend-mode: screen;
+    }
+
+    .runner-player {
+      position: absolute;
+      left: calc(50% - 72px);
+      bottom: 18px;
+      width: min(220px, 28vw);
+      height: auto;
+      object-fit: contain;
+      border: 0;
+      border-radius: 0;
+      filter: drop-shadow(0 18px 18px rgba(20, 26, 58, 0.24));
+      transition: left 110ms ease;
+      animation: run-hop 520ms ease-in-out infinite;
+      z-index: 5;
+    }
+
+    @keyframes run-hop {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-8px) scale(1.03); }
+    }
+
+    .power-bubble {
+      position: absolute;
+      z-index: 6;
+      bottom: clamp(190px, 27dvh, 260px);
+      min-width: 112px;
+      padding: 8px 12px;
+      border: 2px solid rgba(255,255,255,0.88);
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(255,79,179,0.94), rgba(255,157,61,0.92));
+      color: #fff;
+      font-size: clamp(24px, 4vw, 46px);
+      font-weight: 1000;
+      line-height: 1;
+      text-align: center;
+      text-shadow: 0 3px 12px rgba(8,16,40,0.22);
+      box-shadow: 0 18px 32px rgba(255,79,179,0.22);
+      transform: translateX(-50%);
+      transition: left 110ms ease, transform 130ms ease;
+      pointer-events: none;
+    }
+
+    .power-bubble.pop {
+      transform: translateX(-50%) scale(1.12);
+    }
+
+    .gate-pair {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -120px;
+      z-index: 4;
+      height: 110px;
+      pointer-events: none;
+      will-change: top;
+    }
+
+    .math-gate {
+      position: absolute;
+      top: 0;
+      width: min(230px, 38vw);
+      min-height: 96px;
+      display: grid;
+      place-items: center;
+      gap: 4px;
+      padding: 10px;
+      border: 2px solid rgba(255,255,255,0.58);
+      border-radius: 16px;
+      background: rgba(14, 24, 52, 0.64);
+      color: #fff;
+      box-shadow: 0 18px 34px rgba(8,16,40,0.22);
+      backdrop-filter: blur(12px);
+      transform: translateX(-50%) scale(0.96);
+      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+    }
+
+    .math-gate.selected {
+      border-color: rgba(255,226,92,0.98);
+      background: linear-gradient(135deg, rgba(255,79,179,0.80), rgba(255,157,61,0.76));
+      transform: translateX(-50%) scale(1.04);
+      box-shadow: 0 0 34px rgba(255,226,92,0.34), 0 20px 38px rgba(8,16,40,0.24);
+    }
+
+    .math-gate strong {
+      font-size: clamp(30px, 5vw, 58px);
+      font-weight: 1000;
+      line-height: 0.9;
+      letter-spacing: 0;
+    }
+
+    .math-gate span {
+      font-size: 12px;
+      font-weight: 1000;
+      opacity: 0.92;
+    }
+
+    .runner-boss {
+      position: absolute;
+      z-index: 5;
+      left: 50%;
+      top: max(92px, 14dvh);
+      width: min(360px, 70vw);
+      padding: 14px;
+      border: 2px solid rgba(255,255,255,0.62);
+      border-radius: 18px;
+      background: rgba(14, 24, 52, 0.70);
+      color: #fff;
+      text-align: center;
+      box-shadow: 0 20px 38px rgba(8,16,40,0.24);
+      backdrop-filter: blur(12px);
+      transform: translateX(-50%) scale(0.92);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+
+    .runner-boss.show {
+      opacity: 1;
+      transform: translateX(-50%) scale(1);
+    }
+
+    .boss-name {
+      font-size: 16px;
+      font-weight: 1000;
+      letter-spacing: 0;
+    }
+
+    .boss-hpbar {
+      height: 18px;
+      margin-top: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.18);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.24);
+    }
+
+    .boss-hpfill {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #ff4fb3, #ff9d3d, #ffe25c);
+      transition: width 700ms cubic-bezier(.16,.84,.28,1);
+    }
+
+    .boss-hptext {
+      margin-top: 6px;
+      font-size: 12px;
+      font-weight: 1000;
+      color: rgba(255,255,255,0.88);
+    }
+
+    .jump-stage {
+      overflow: hidden;
+      background-image:
+        linear-gradient(180deg, rgba(255,255,255,0.02), rgba(8,16,40,0.18)),
+        url("../assets/minigames/jump/jump-athletic-bg.png");
+      background-size: cover;
+      background-position: center;
+    }
+
+    .jump-stage::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1;
+      height: 24%;
+      background:
+        linear-gradient(180deg, transparent, rgba(8,16,40,0.20)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.24) 0 3px, transparent 3px 96px);
+      pointer-events: none;
+      mix-blend-mode: screen;
+      animation: jump-track-flow 900ms linear infinite;
+    }
+
+    .jump-player {
+      position: absolute;
+      left: clamp(32px, 12vw, 148px);
+      bottom: 72px;
+      z-index: 5;
+      width: min(210px, 30vw);
+      max-height: 46dvh;
+      object-fit: contain;
+      filter: drop-shadow(0 18px 18px rgba(8,16,40,0.24));
+      transform-origin: 50% 100%;
+      will-change: bottom, transform;
+    }
+
+    .jump-obstacle {
+      position: absolute;
+      z-index: 4;
+      bottom: 68px;
+      width: var(--obstacle-w, 120px);
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 14px 16px rgba(8,16,40,0.22));
+      will-change: left;
+    }
+
+    .jump-charge {
+      position: absolute;
+      z-index: 7;
+      left: clamp(36px, 12vw, 146px);
+      bottom: clamp(256px, 42dvh, 360px);
+      width: min(170px, 34vw);
+      height: 16px;
+      overflow: hidden;
+      border: 2px solid rgba(255,255,255,0.82);
+      border-radius: 999px;
+      background: rgba(14, 24, 52, 0.45);
+      box-shadow: 0 12px 22px rgba(8,16,40,0.18);
+      backdrop-filter: blur(10px);
+    }
+
+    .jump-charge-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--game-cyan), var(--game-yellow), var(--game-pink));
+      transition: width 80ms linear;
+    }
+
+    .jump-warning {
+      position: absolute;
+      z-index: 6;
+      right: 16px;
+      top: max(88px, 12dvh);
+      max-width: min(330px, 78vw);
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(255,79,179,0.72);
+      color: #fff;
+      font-weight: 1000;
+      box-shadow: 0 12px 22px rgba(8,16,40,0.18);
+      backdrop-filter: blur(12px);
+      pointer-events: none;
+    }
+
+    @keyframes jump-track-flow {
+      from { background-position: 0 0, 0 0; }
+      to { background-position: 0 0, -96px 0; }
+    }
+
+    .fall-item {
+      position: absolute;
+      width: 82px;
+      height: 82px;
+      border: 0;
+      border-radius: 0;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 14px rgba(20, 26, 58, 0.24));
+      z-index: 3;
+      transform-origin: 50% 85%;
+      will-change: top, left, transform, opacity;
+    }
+
+    .arena.combo-pulse::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      background: radial-gradient(circle at 50% 68%, rgba(255,226,92,0.34), transparent 26%);
+      pointer-events: none;
+      animation: combo-pulse 360ms ease-out forwards;
+    }
+
+    .arena.fever::before {
+      background:
+        radial-gradient(circle at 50% 62%, rgba(255,226,92,0.24), transparent 26%),
+        linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,79,179,0.18));
+    }
+
+    .arena.fever .runner-horizon {
+      color: #fff;
+      background: linear-gradient(135deg, rgba(255,79,179,0.86), rgba(255,157,61,0.86));
+      box-shadow: 0 0 28px rgba(255,226,92,0.42), 0 14px 30px rgba(36,48,79,0.16);
+    }
+
+    .arena.miss-shake {
+      animation: miss-shake 240ms ease both;
+    }
+
+    .gesture {
+      position: absolute;
+      z-index: 5;
+      left: 50%;
+      bottom: 174px;
+      transform: translateX(-50%);
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.84);
+      color: var(--game-navy);
+      font-weight: 1000;
+      box-shadow: 0 10px 18px rgba(36, 48, 79, 0.16);
+      pointer-events: none;
+    }
+
+    .dojo-stage {
+      display: grid;
+      place-items: center;
+      background-image: url("../assets/minigames/crops/dojo-bg.png");
+      min-height: calc(100dvh - 118px);
+      overflow: hidden;
+    }
+
+    .dojo-stage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background:
+        radial-gradient(circle at 50% 36%, rgba(255,226,92,0.16), transparent 22%),
+        linear-gradient(90deg, rgba(255,255,255,0.08), transparent 24%, transparent 76%, rgba(255,255,255,0.08));
+      pointer-events: none;
+    }
+
+    .dojo-flash,
+    .slash-effect {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .dojo-flash {
+      background: rgba(255,255,255,0.72);
+    }
+
+    .slash-effect {
+      background:
+        linear-gradient(126deg, transparent 42%, rgba(255,255,255,0.98) 46% 51%, rgba(255,226,92,0.9) 52% 55%, transparent 60%);
+      filter: drop-shadow(0 0 22px rgba(255,226,92,0.92));
+    }
+
+    .dojo-stage.cue .dojo-call {
+      animation: cue-pop 420ms ease both;
+    }
+
+    .dojo-stage.cue .dojo-flash {
+      animation: dojo-flash 260ms ease-out forwards;
+    }
+
+    .dojo-stage.slash-now .slash-effect {
+      animation: slash-sweep 360ms ease-out forwards;
+    }
+
+    .dojo-call {
+      position: absolute;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      min-width: min(450px, 88%);
+      padding: 14px;
+      border: 1px solid rgba(36, 48, 79, 0.34);
+      border-radius: 12px;
+      background: linear-gradient(135deg, #ffffff, #fff7d8);
+      color: var(--game-navy);
+      text-align: center;
+      font-size: clamp(24px, 5vw, 44px);
+      font-weight: 1000;
+      box-shadow: 0 12px 22px rgba(255, 157, 61, 0.18);
+      z-index: 3;
+    }
+
+    .fighter {
+      width: min(430px, 68vw);
+      max-height: 72dvh;
+      object-fit: contain;
+      border: 0;
+      border-radius: 0;
+      filter: drop-shadow(0 22px 20px rgba(20, 26, 58, 0.24));
+      transition: transform 180ms ease, filter 180ms ease;
+      z-index: 2;
+    }
+
+    .fighter.ready { transform: translateX(-42px) rotate(-4deg); }
+    .fighter.strike { transform: translateX(62px) rotate(10deg) scale(1.04); filter: drop-shadow(0 0 22px rgba(255,226,92,0.9)); }
+    .fighter.hurt { transform: translateX(-24px) rotate(-14deg) scale(0.96); filter: grayscale(0.25); }
+    .fighter.win { transform: translateY(-18px) scale(1.06); filter: drop-shadow(0 0 26px rgba(53,199,255,0.9)); }
+
+    .memory-stage {
+      display: grid;
+      grid-template-rows: 1fr auto;
+      gap: 14px;
+      padding: 18px;
+      background-image: url("../assets/minigames/crops/memory-bg.png");
+      overflow: hidden;
+    }
+
+    .light-rig {
+      position: absolute;
+      top: max(58px, 9dvh);
+      left: 50%;
+      z-index: 2;
+      width: min(560px, 90vw);
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .stage-light {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 34% 26%, rgba(255,255,255,0.95), transparent 20%),
+        var(--orb) center / 70% no-repeat,
+        rgba(255,255,255,0.48);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.72), 0 14px 26px rgba(8,16,40,0.18);
+      opacity: 0.72;
+      transform: scale(0.92);
+      transition: transform 160ms ease, opacity 160ms ease, filter 160ms ease;
+    }
+
+    .stage-light.lit {
+      opacity: 1;
+      transform: scale(1.14);
+      filter: brightness(1.35) saturate(1.22);
+      box-shadow: inset 0 0 0 3px rgba(255,255,255,0.9), 0 0 34px rgba(255,226,92,0.74), 0 18px 34px rgba(8,16,40,0.22);
+    }
+
+    .stage-light[data-light="green"] {
+      background:
+        radial-gradient(circle at 34% 26%, rgba(255,255,255,0.96), transparent 20%),
+        var(--orb) center / 74% no-repeat,
+        linear-gradient(135deg, rgba(38, 235, 128, 0.92), rgba(5, 156, 92, 0.82));
+      box-shadow: inset 0 0 0 2px rgba(230,255,240,0.88), 0 14px 26px rgba(8,84,55,0.22);
+    }
+
+    .memory-idol {
+      position: absolute;
+      right: clamp(14px, 4vw, 44px);
+      bottom: 118px;
+      width: min(260px, 30vw);
+      max-height: 48dvh;
+      object-fit: contain;
+      z-index: 2;
+      filter: drop-shadow(0 18px 18px rgba(20, 26, 58, 0.24));
+      pointer-events: none;
+    }
+
+    .stream {
+      position: relative;
+      min-height: 320px;
+      overflow: hidden;
+      border: 2px solid rgba(255,255,255,0.58);
+      border-radius: 16px;
+      background: rgba(6, 12, 44, 0.18);
+      backdrop-filter: blur(4px);
+      z-index: 1;
+      margin-top: clamp(84px, 16dvh, 140px);
+    }
+
+    .memory-dot {
+      position: absolute;
+      top: calc(50% - 38px);
+      right: -86px;
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 14px rgba(20, 26, 58, 0.24));
+      animation: dot-flow 920ms linear forwards;
+    }
+
+    @keyframes dot-flow {
+      to { right: calc(100% + 86px); }
+    }
+
+    .color-pad-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      z-index: 2;
+    }
+
+    .color-pad {
+      aspect-ratio: 1;
+      border: 2px solid rgba(255,255,255,0.9);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.78) var(--orb) center/78% no-repeat;
+      box-shadow: 0 14px 24px rgba(20, 26, 58, 0.24);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .color-pad[data-color="green"] {
+      border-color: rgba(223,255,235,0.96);
+      background:
+        var(--orb) center / 82% no-repeat,
+        linear-gradient(135deg, rgba(48, 239, 132, 0.96), rgba(2, 143, 86, 0.90));
+      box-shadow: 0 14px 24px rgba(20, 26, 58, 0.18), 0 0 22px rgba(37, 224, 124, 0.28);
+    }
+
+    .color-pad:active,
+    .color-pad.hit {
+      transform: scale(0.94);
+      filter: brightness(1.2);
+    }
+
+    .memory-stage.inputting .color-pad {
+      animation: pad-ready 900ms ease-in-out infinite;
+    }
+
+    @keyframes runner-floor-flow {
+      from { background-position: 0 0, 0 0, 0 0; }
+      to { background-position: 0 0, 0 58px, 0 0; }
+    }
+
+    @keyframes combo-pulse {
+      from { opacity: 1; transform: scale(0.96); }
+      to { opacity: 0; transform: scale(1.16); }
+    }
+
+    @keyframes miss-shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-3px); }
+    }
+
+    @keyframes cue-pop {
+      0% { transform: translateX(-50%) scale(0.82); }
+      55% { transform: translateX(-50%) scale(1.12); }
+      100% { transform: translateX(-50%) scale(1); }
+    }
+
+    @keyframes dojo-flash {
+      0% { opacity: 0.95; }
+      100% { opacity: 0; }
+    }
+
+    @keyframes slash-sweep {
+      0% { opacity: 0; transform: translateX(-34%) scale(0.86); }
+      35% { opacity: 1; }
+      100% { opacity: 0; transform: translateX(28%) scale(1.16); }
+    }
+
+    @keyframes pad-ready {
+      0%, 100% { box-shadow: 0 14px 24px rgba(20, 26, 58, 0.24); }
+      50% { box-shadow: 0 0 24px rgba(255,226,92,0.36), 0 14px 24px rgba(20, 26, 58, 0.24); }
+    }
+
+    .sequence-history {
+      min-height: 50px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      padding: 8px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.82);
+    }
+
+    .history-dot {
+      width: 34px;
+      height: 34px;
+      border: 2px solid rgba(255,255,255,0.9);
+      border-radius: 50%;
+      background: var(--orb) center/cover no-repeat;
+      box-shadow: 0 8px 14px rgba(20, 26, 58, 0.18);
+    }
+
+    body.playing .shell {
+      width: 100%;
+      min-height: 100dvh;
+      padding: 0;
+      gap: 0;
+    }
+
+    body.playing header {
+      display: none;
+    }
+
+    body.playing main,
+    body.playing .view.active,
+    body.playing .play-layout {
+      min-height: 100dvh;
+    }
+
+    body.playing .arena {
+      min-height: 100dvh;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    body.playing .floating-nav {
+      top: max(14px, env(safe-area-inset-top));
+      right: max(14px, env(safe-area-inset-right));
+    }
+
+    .floating-nav {
+      position: absolute;
+      right: 14px;
+      top: 14px;
+      z-index: 6;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .mini-chip {
+      min-height: 34px;
+      padding: 0 10px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.86);
+      color: var(--game-blue);
+      font-size: 12px;
+      font-weight: 1000;
+      box-shadow: 0 10px 18px rgba(36,48,79,0.16);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    @media (max-width: 900px) {
+      .game-grid,
+      .idea-grid,
+      .lobby-layout,
+      .howto-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .host-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .host-idol {
+        min-height: 190px;
+        order: -1;
+      }
+
+      .daily-summary {
+        grid-template-columns: 1fr;
+      }
+
+      .game-grid {
+        gap: 10px;
+        padding: 10px;
+      }
+
+      .image-card {
+        min-height: 132px;
+      }
+
+      .preview-panel {
+        min-height: 420px;
+      }
+
+      .arena {
+        min-height: 520px;
+      }
+
+    }
+
+    @media (max-width: 560px) {
+      .shell {
+        width: min(100% - 20px, 1120px);
+        padding-top: 14px;
+      }
+
+      header {
+        align-items: flex-start;
+      }
+
+      .top-link {
+        min-height: 34px;
+        padding: 0 10px;
+        font-size: 12px;
+      }
+
+      .game-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .host-panel {
+        min-height: 0;
+      }
+
+      .host-copy {
+        padding: 14px;
+      }
+
+      .host-idol {
+        min-height: 150px;
+      }
+
+      .daily-card {
+        min-height: 46px;
+        padding: 8px 10px;
+      }
+
+      .daily-card span {
+        font-size: 16px;
+      }
+
+      .image-card {
+        min-height: 108px;
+      }
+
+      .card-title {
+        min-height: 28px;
+        left: 8px;
+        right: 8px;
+        bottom: 30px;
+        padding: 0 8px;
+        font-size: 12px;
+      }
+
+      .card-meta {
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        font-size: 9px;
+      }
+
+      .card-meta span {
+        min-height: 18px;
+        padding: 1px 6px;
+      }
+
+      .new-badge {
+        top: 8px;
+        left: 8px;
+        font-size: 10px;
+      }
+
+      .preview-title {
+        font-size: 42px;
+      }
+
+      .preview-chibi {
+        width: min(220px, 58%);
+      }
+
+      .choice-card {
+        min-height: 86px;
+      }
+
+      .arena {
+        min-height: 470px;
+      }
+
+      .runner-player {
+        width: min(160px, 38vw);
+        left: calc(50% - 80px);
+      }
+
+      .fall-item,
+      .memory-dot {
+        width: 62px;
+        height: 62px;
+      }
+
+      .power-bubble {
+        bottom: 178px;
+        min-width: 86px;
+        padding: 7px 10px;
+        font-size: 28px;
+      }
+
+      .math-gate {
+        width: min(150px, 42vw);
+        min-height: 76px;
+        border-radius: 14px;
+      }
+
+      .math-gate strong {
+        font-size: 34px;
+      }
+
+      .math-gate span {
+        font-size: 10px;
+      }
+
+      .runner-boss {
+        top: 226px;
+        width: min(300px, 82vw);
+      }
+
+      .jump-player {
+        left: 22px;
+        bottom: 62px;
+        width: min(156px, 40vw);
+      }
+
+      .jump-obstacle {
+        bottom: 60px;
+        width: var(--obstacle-w-mobile, var(--obstacle-w, 92px));
+      }
+
+      .jump-charge {
+        left: 28px;
+        bottom: 246px;
+        width: 128px;
+      }
+
+      .jump-warning {
+        top: 226px;
+        right: 10px;
+        max-width: 210px;
+        font-size: 12px;
+      }
+
+      .stage-hud {
+        left: 10px;
+        right: 10px;
+        top: 58px;
+        width: auto;
+      }
+
+      .stage-hud .metric-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .metric,
+      .status {
+        padding: 7px 8px;
+        font-size: 11px;
+      }
+
+      .metric span {
+        font-size: 17px;
+      }
+
+      .coach-badge {
+        left: 10px;
+        right: 10px;
+        bottom: max(10px, env(safe-area-inset-bottom));
+        width: auto;
+        grid-template-columns: 48px minmax(0, 1fr);
+      }
+
+      .coach-badge img {
+        width: 48px;
+        height: 48px;
+      }
+
+      .memory-stage .coach-badge {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div>
+        <p class="kicker">GAME TRAINING</p>
+        <h1>ミニゲーム</h1>
+      </div>
+      <a class="top-link" href="../index.html">タイトルへ</a>
+    </header>
+
+    <main>
+      <section id="selectView" class="view active" aria-label="game select">
+        <section class="host-panel" aria-label="game host">
+          <div class="host-copy">
+            <b>HOST: 海崎リナ</b>
+            <span>今日はどれで遊ぶ？</span>
+            <p>リナがミニゲームを仕切るよ。各ゲームは担当アイドルが違うから、気分で選んで。</p>
+          </div>
+          <img class="host-idol" src="../assets/title-idols/backgrounds/rina.png" alt="海崎リナの案内イラスト" />
+        </section>
+        <div id="dailySummary" class="daily-summary" aria-label="today game summary"></div>
+        <div class="game-grid">
+          <div class="image-card" style="--card-bg: url('../assets/minigames/crops/runner-bg.png')" data-select-game="runner">
+            <span class="new-badge">NEW!</span>
+            <span class="card-title">走る特訓</span>
+            <span class="card-meta"><span>2 LANE BOSS</span><span data-best="runner">BEST 0</span></span>
+          </div>
+          <div class="image-card" style="--card-bg: url('../assets/minigames/jump/jump-athletic-bg.png')" data-select-game="jump">
+            <span class="new-badge">NEW!</span>
+            <span class="card-title">ジャンプリズム</span>
+            <span class="card-meta"><span>HOLD JUMP</span><span data-best="jump">BEST 0</span></span>
+          </div>
+          <div class="image-card" style="--card-bg: url('../assets/minigames/crops/dojo-bg.png')" data-select-game="reflex">
+            <span class="new-badge">NEW!</span>
+            <span class="card-title">刹那の見切り</span>
+            <span class="card-meta"><span>TAP</span><span data-best="reflex">BEST 0</span></span>
+          </div>
+          <div class="image-card" style="--card-bg: url('../assets/minigames/crops/memory-bg.png')" data-select-game="memory">
+            <span class="new-badge">NEW!</span>
+            <span class="card-title">四色記憶</span>
+            <span class="card-meta"><span>LIGHT</span><span data-best="memory">BEST 0</span></span>
+          </div>
+        </div>
+        <section class="idea-section" aria-label="game ideas">
+          <p class="idea-title">次に増やすゲーム案</p>
+          <div class="idea-grid">
+            <div class="idea-card" style="--idea-bg: url('../assets/title-idols/backgrounds/hinata.png')" data-select-idea="climb">
+              <b>スピードクライム</b>
+              <span>壁を登る連打アクション</span>
+            </div>
+            <div class="idea-card" style="--idea-bg: url('../assets/title-idols/backgrounds/reika.png')" data-select-idea="spotlight">
+              <b>スポットライト</b>
+              <span>光を追ってタップ</span>
+            </div>
+            <div class="idea-card" style="--idea-bg: url('../assets/title-idols/backgrounds/mio.png')" data-select-idea="slide">
+              <b>スライドダンス</b>
+              <span>指でなぞるリズム</span>
+            </div>
+            <div class="idea-card" style="--idea-bg: url('../assets/title-idols/backgrounds/luna.png')" data-select-idea="balance">
+              <b>バランスレッスン</b>
+              <span>揺れを支える集中ゲーム</span>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section id="lobbyView" class="view" aria-label="game lobby"></section>
+      <section id="howtoView" class="view" aria-label="how to play"></section>
+      <section id="playView" class="view" aria-label="game play"></section>
+    </main>
+  </div>
+
+  <script>
+    const ASSET = '../assets/minigames/crops/';
+    const SPRITE = '../assets/minigames/transparent/';
+    const IDOL = '../assets/title-idols/backgrounds/';
+    const CHIBI = '../assets/chibis/';
+    const GAMES = {
+      runner: {
+        name: '走る特訓',
+        coachName: '海崎リナ',
+        coachLine: '走るやつはリナ担当。ノリよく拾ってこ。',
+        coach: `${IDOL}rina.png`,
+        chibi: `${CHIBI}rina-game.png`,
+        bg: `${ASSET}runner-bg.png`,
+        hero: `${SPRITE}idol-run.png`,
+        howto: `${ASSET}runner-howto.png`,
+        steps: [
+          '左右2レーンに、+ と × のゲートが流れてきます。',
+          '頭上のPOWERがより大きく伸びる方へ、瞬間的に左右移動します。',
+          '低い数字では + が強く、高い数字では × が強くなる場面があります。',
+          '10回選んだ後、最後にBOSSへPOWERで攻撃します。'
+        ],
+        assets: ['idol-run.png', 'idol-left.png', 'idol-right.png', 'item-blue-dumbbell.png', 'item-pink-dumbbell.png', 'item-lollipop.png', 'item-candy.png']
+      },
+      jump: {
+        name: 'ジャンプリズム',
+        coachName: '小羽ひなた',
+        coachLine: '押す長さで高さが変わるよ。ギリギリを飛ぼう。',
+        coach: `${IDOL}hinata.png`,
+        chibi: `${CHIBI}hinata-plan.png`,
+        bg: '../assets/minigames/jump/jump-athletic-bg.png',
+        hero: '../assets/minigames/jump/jump-jump.png',
+        howto: '../assets/minigames/jump/jump-athletic-bg.png',
+        steps: [
+          '画面を押すとジャンプします。',
+          '長押しするほど高度が上がります。',
+          '低い障害物は短押し、高い障害物は長押しで越えます。',
+          '走りモーションは2枚の絵を交互に表示し、ジャンプ中だけ専用絵になります。'
+        ],
+        assets: [
+          '../assets/minigames/jump/jump-run-a.png',
+          '../assets/minigames/jump/jump-run-b.png',
+          '../assets/minigames/jump/jump-jump.png',
+          '../assets/minigames/jump/jump-obstacle-hurdle.png',
+          '../assets/minigames/jump/jump-obstacle-blocks.png',
+          '../assets/minigames/jump/jump-obstacle-roller.png'
+        ]
+      },
+      reflex: {
+        name: '刹那の見切り',
+        coachName: '黒瀬ミオ',
+        coachLine: '合図まで動かない。そこだけ見て。',
+        coach: `${IDOL}mio.png`,
+        chibi: `${CHIBI}mio-manual.png`,
+        bg: `${ASSET}dojo-bg.png`,
+        hero: `${SPRITE}idol-ready.png`,
+        howto: `${ASSET}reflex-howto.png`,
+        steps: [
+          '最初は「構えて!!」の状態で待ちます。',
+          '「打て!」が出た瞬間だけ、道場の画面をタップします。',
+          '早すぎると負け、遅すぎても負けです。',
+          '勝つたびに目標時間が短くなります。'
+        ],
+        assets: ['idol-ready.png', 'idol-strike.png', 'idol-hurt.png', 'idol-win.png', 'paper-fan.png']
+      },
+      memory: {
+        name: '四色記憶',
+        coachName: '白瀬ルナ',
+        coachLine: '色の流れを、静かに一つずつ覚えましょう。',
+        coach: `${IDOL}luna.png`,
+        chibi: `${CHIBI}luna-sim.png`,
+        bg: `${ASSET}memory-bg.png`,
+        hero: `${SPRITE}idol-memory.png`,
+        howto: `${ASSET}memory-howto.png`,
+        steps: [
+          '右から左へ流れる色の順番を覚えます。',
+          '流れ終わったら、下の色パネルを同じ順番でタップします。',
+          '必要な数を押すと自動で答え合わせします。',
+          '正解すると次のラウンドで少し長くなります。'
+        ],
+        assets: ['idol-memory.png', 'orb-red.png', 'orb-blue.png', 'orb-green.png', 'orb-yellow.png']
+      }
+    };
+
+    const IDEAS = {
+      climb: {
+        name: 'スピードクライム',
+        bg: `${IDOL}hinata.png`,
+        coachName: '小羽ひなた',
+        copy: 'タイミングよく左右を押して、壁を駆け上がる連打アクション。焦るほど落ちやすい。',
+        points: ['左右交互タップ', '落下ゲージつき', '短時間でかなり熱い']
+      },
+      spotlight: {
+        name: 'スポットライト',
+        bg: `${IDOL}reika.png`,
+        coachName: '西園寺レイカ',
+        copy: '移動するスポットライトにキャラを入れ続ける集中ゲーム。光の中心ほどスコアが伸びる。',
+        points: ['ドラッグ操作', 'ステージ感が強い', 'スマホでも直感的']
+      },
+      slide: {
+        name: 'スライドダンス',
+        bg: `${IDOL}mio.png`,
+        coachName: '黒瀬ミオ',
+        copy: '画面に出る短い軌跡をなぞるゲーム。きれいになぞれるほどコンボが伸びる。',
+        points: ['タッチ向き', '見た目が派手', '短時間で遊べる']
+      },
+      balance: {
+        name: 'バランスレッスン',
+        bg: `${IDOL}luna.png`,
+        coachName: '白瀬ルナ',
+        copy: '揺れるバーを中心に保つゲーム。ゆっくりした操作で落ち着いて遊べる。',
+        points: ['集中系', '難易度調整しやすい', '色数を抑えて上品に作れる']
+      }
+    };
+
+    const SCORE_KEY = 'nvDftMinigameScores.v2';
+    const PLAY_LOG_KEY = 'nvDftMinigameDaily.v2';
+    const viewIds = ['selectView', 'lobbyView', 'howtoView', 'playView'];
+    let selectedGame = 'runner';
+    let cleanupGame = () => {};
+    let restartGame = () => startSelectedGame();
+
+    const RESULT_COMMENTS = {
+      runner: {
+        PERFECT: '完璧。計算も走りもキレてる。ボスまで余裕。',
+        GREAT: '撃破成功。どっちが伸びるか、ちゃんと見えてる。',
+        GOOD: '惜しい。あと少しだけ効率のいい選択を狙おう。',
+        CLEAR: 'まずは流れを掴めてる。次は数字を見て選ぶ。',
+        MISS: 'ボスが残ったね。低い時の+、高い時の×を意識。'
+      },
+      jump: {
+        PERFECT: '完走すごい。長押しの高さ調整、かなり上手い。',
+        GREAT: 'いい跳び方。難しい障害物もかなり抜けてる。',
+        GOOD: 'ちゃんと避けられてる。次は押す長さをもっと細かく。',
+        CLEAR: '走りはじめとしては十分。障害物の高さを見よう。',
+        MISS: '惜しい。高いのは長押し、低いのは短くでいこう。'
+      },
+      reflex: {
+        PERFECT: '反応すごい。今のは完全に見えてた。',
+        GREAT: 'かなり速い。間合いの取り方がいい感じ。',
+        GOOD: '勝ち越し。次は焦らず合図だけ見る。',
+        CLEAR: '大丈夫。早押しだけ気をつけよう。',
+        MISS: 'フェイントに引っかかったね。次は待てる。'
+      },
+      memory: {
+        PERFECT: '記憶力ばっちり。色の流れを掴めてる。',
+        GREAT: 'かなり覚えられてる。テンポが上がってもいけそう。',
+        GOOD: '順番の見方は合ってる。もう少し集中。',
+        CLEAR: 'ここから伸びる。短い列から安定させよう。',
+        MISS: '一回深呼吸。見た順番を声に出すと覚えやすい。'
+      }
+    };
+
+    function japanDayKey(date = new Date()) {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Tokyo',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).formatToParts(date);
+      const map = Object.fromEntries(parts.map(part => [part.type, part.value]));
+      return `${map.year}-${map.month}-${map.day}`;
+    }
+
+    function loadScores() {
+      try {
+        return JSON.parse(localStorage.getItem(SCORE_KEY) || '{}');
+      } catch {
+        return {};
+      }
+    }
+
+    function loadPlayLog() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(PLAY_LOG_KEY) || '{}');
+        if (!parsed.days) parsed.days = {};
+        return parsed;
+      } catch {
+        return { days: {} };
+      }
+    }
+
+    function saveScore(gameKey, value) {
+      const scores = loadScores();
+      scores[gameKey] = Math.max(Number(scores[gameKey] || 0), value);
+      localStorage.setItem(SCORE_KEY, JSON.stringify(scores));
+      updateGameCards();
+    }
+
+    function recordPlay(gameKey, score, rank) {
+      const log = loadPlayLog();
+      const today = japanDayKey();
+      if (!log.days[today]) log.days[today] = {};
+      const entry = log.days[today][gameKey] || { plays: 0, best: 0, last: 0, rank: 'CLEAR' };
+      entry.plays += 1;
+      entry.last = score;
+      entry.best = Math.max(Number(entry.best || 0), score);
+      entry.rank = rank;
+      entry.updatedAt = new Date().toISOString();
+      log.days[today][gameKey] = entry;
+      localStorage.setItem(PLAY_LOG_KEY, JSON.stringify(log));
+      updateGameCards();
+      return entry;
+    }
+
+    function updateGameCards() {
+      const scores = loadScores();
+      document.querySelectorAll('[data-best]').forEach(label => {
+        const key = label.dataset.best;
+        label.textContent = `BEST ${Number(scores[key] || 0)}`;
+      });
+      renderDailySummary();
+    }
+
+    function renderDailySummary() {
+      const wrap = document.getElementById('dailySummary');
+      if (!wrap) return;
+      const today = japanDayKey();
+      const day = loadPlayLog().days[today] || {};
+      wrap.innerHTML = Object.entries(GAMES).map(([key, game]) => {
+        const entry = day[key];
+        const unit = key === 'runner' ? 'PT' : key === 'jump' ? 'M' : key === 'reflex' ? 'WIN' : 'ROUND';
+        const score = entry ? `${entry.rank} / ${entry.best} ${unit}` : 'NO PLAY';
+        return `<div class="daily-card"><b>${game.name}</b><span>${score}</span></div>`;
+      }).join('');
+    }
+
+    function rankByScore(score, thresholds) {
+      if (score >= thresholds.perfect) return 'PERFECT';
+      if (score >= thresholds.great) return 'GREAT';
+      if (score >= thresholds.good) return 'GOOD';
+      return 'CLEAR';
+    }
+
+    function resultComment(gameKey, rank) {
+      return RESULT_COMMENTS[gameKey]?.[rank] || RESULT_COMMENTS[gameKey]?.CLEAR || 'いい感じ。もう一回いこう。';
+    }
+
+    function floatText(arena, text, x = 50, y = 50, tone = '') {
+      const el = document.createElement('div');
+      el.className = `float-text ${tone}`.trim();
+      el.style.setProperty('--float-x', `${x}%`);
+      el.style.setProperty('--float-y', `${y}%`);
+      el.textContent = text;
+      arena.appendChild(el);
+      window.setTimeout(() => el.remove(), 760);
+    }
+
+    function showView(id) {
+      viewIds.forEach(viewId => document.getElementById(viewId).classList.toggle('active', viewId === id));
+      document.body.classList.toggle('playing', id === 'playView');
+      if (id === 'selectView') updateGameCards();
+    }
+
+    function stopGame() {
+      cleanupGame();
+      cleanupGame = () => {};
+    }
+
+    function imageSrc(src, prefix = SPRITE) {
+      return /^(?:\.\.\/|\.\/|https?:|data:)/.test(src) ? src : `${prefix}${src}`;
+    }
+
+    function assetList(game) {
+      return game.assets.map(name => `<img src="${imageSrc(name)}" alt="" />`).join('');
+    }
+
+    function coachBadge(game) {
+      return `
+        <aside class="coach-badge">
+          <img src="${game.chibi || game.coach}" alt="" />
+          <div>
+            <b>${game.coachName}</b>
+            <span>${game.coachLine}</span>
+          </div>
+        </aside>
+      `;
+    }
+
+    function showLobby(key) {
+      stopGame();
+      selectedGame = key;
+      const game = GAMES[key];
+      document.getElementById('howtoView').innerHTML = '';
+      document.getElementById('playView').innerHTML = '';
+      document.getElementById('lobbyView').innerHTML = `
+        <div class="lobby-layout">
+          <section class="preview-panel" style="--preview-bg: url('${game.coach || game.bg}')">
+            <img class="preview-chibi" src="${game.chibi || game.hero}" alt="" />
+            <h2 class="preview-title">${game.name}</h2>
+          </section>
+          <aside class="choice-list">
+            <div class="choice-card" style="--card-bg: url('${game.bg}')" data-action="start"><span class="card-title">スタート</span></div>
+            <div class="choice-card" style="--card-bg: url('${game.howto}')" data-action="howto"><span class="card-title">あそびかた</span></div>
+            <div class="choice-card" style="--card-bg: url('../assets/minigames/asset-sheet.png')" data-action="select"><span class="card-title">ゲームを選ぶ</span></div>
+            <div class="mini-asset-grid">${assetList(game)}</div>
+          </aside>
+        </div>
+      `;
+      showView('lobbyView');
+    }
+
+    function showIdea(key) {
+      stopGame();
+      const idea = IDEAS[key];
+      if (!idea) return;
+      document.getElementById('howtoView').innerHTML = '';
+      document.getElementById('playView').innerHTML = '';
+      document.getElementById('lobbyView').innerHTML = `
+        <div class="lobby-layout">
+          <section class="preview-panel" style="--preview-bg: url('${idea.bg}')">
+            <h2 class="preview-title">${idea.name}</h2>
+          </section>
+          <aside class="choice-list">
+            <div class="howto-panel">
+              <div class="howto-copy">
+                <h2>${idea.coachName}</h2>
+                <p class="status">${idea.copy}</p>
+                <ol>${idea.points.map(point => `<li>${point}</li>`).join('')}</ol>
+              </div>
+            </div>
+            <div class="choice-card" style="--card-bg: url('../assets/minigames/asset-sheet.png')" data-action="select"><span class="card-title">ゲームを選ぶ</span></div>
+          </aside>
+        </div>
+      `;
+      showView('lobbyView');
+    }
+
+    function showHowto() {
+      stopGame();
+      const game = GAMES[selectedGame];
+      document.getElementById('lobbyView').innerHTML = '';
+      document.getElementById('playView').innerHTML = '';
+      document.getElementById('howtoView').innerHTML = `
+        <div class="howto-layout">
+          <article class="howto-panel">
+            <img class="howto-image" src="${game.howto}" alt="${game.name}のあそびかた" />
+            <div class="howto-copy">
+              <h2>${game.name}</h2>
+              <ol>${game.steps.map(step => `<li>${step}</li>`).join('')}</ol>
+            </div>
+          </article>
+          <aside class="choice-list">
+            <div class="choice-card" style="--card-bg: url('${game.bg}')" data-action="start"><span class="card-title">スタート</span></div>
+            <div class="choice-card" style="--card-bg: url('../assets/minigames/asset-sheet.png')" data-action="lobby"><span class="card-title">戻る</span></div>
+          </aside>
+        </div>
+      `;
+      showView('howtoView');
+    }
+
+    function showSelect() {
+      stopGame();
+      document.getElementById('lobbyView').innerHTML = '';
+      document.getElementById('howtoView').innerHTML = '';
+      document.getElementById('playView').innerHTML = '';
+      updateGameCards();
+      showView('selectView');
+    }
+
+    function renderHud(title, metrics, status, assets) {
+      return `
+        <aside class="stage-hud">
+          <h2>${title}</h2>
+          <div class="metric-grid">
+            ${metrics.map(metric => `<div class="metric">${metric.label}<span id="${metric.id}">${metric.value}</span></div>`).join('')}
+          </div>
+          <div id="gameStatus" class="status">${status}</div>
+          <div class="mini-asset-grid">${assets.map(name => `<img src="${imageSrc(name)}" alt="" />`).join('')}</div>
+        </aside>
+      `;
+    }
+
+    function startSelectedGame() {
+      stopGame();
+      document.getElementById('lobbyView').innerHTML = '';
+      document.getElementById('howtoView').innerHTML = '';
+      restartGame = () => startSelectedGame();
+      if (selectedGame === 'runner') startRunner();
+      if (selectedGame === 'jump') startJump();
+      if (selectedGame === 'reflex') startReflex();
+      if (selectedGame === 'memory') startMemory();
+      showView('playView');
+    }
+
+    function stageNav() {
+      return '<div class="floating-nav"><span class="mini-chip" data-action="select">ゲーム一覧</span><span class="mini-chip" data-action="howto">あそびかた</span></div>';
+    }
+
+    function showLessonStart(arena, title, subtitle, done) {
+      const overlay = document.createElement('div');
+      overlay.className = 'lesson-overlay';
+      overlay.innerHTML = `
+        <div class="lesson-card">
+          <div class="lesson-main">${title}</div>
+          <div class="lesson-sub">${subtitle}</div>
+        </div>
+      `;
+      arena.appendChild(overlay);
+      window.setTimeout(() => {
+        overlay.remove();
+        done?.();
+      }, 1180);
+    }
+
+    function showResult(arena, options) {
+      const {
+        gameKey = selectedGame,
+        rank = 'CLEAR',
+        lines = [],
+        sprite = 'idol-win.png',
+        comment = resultComment(gameKey, rank)
+      } = options || {};
+      const overlay = document.createElement('div');
+      overlay.className = 'result-overlay';
+      overlay.innerHTML = `
+        <div class="result-panel">
+          <div class="result-rank">${rank}</div>
+          <img class="result-idol" src="${imageSrc(sprite)}" alt="" />
+          <p class="result-comment">${comment}</p>
+          <p class="result-lines">${lines.join('<br>')}</p>
+          <div class="result-actions">
+            <span class="mini-chip" data-action="restart">もう一度</span>
+            <span class="mini-chip" data-action="select">ゲーム一覧</span>
+          </div>
+        </div>
+      `;
+      arena.appendChild(overlay);
+    }
+
+    function pulseArena(arena, className, ms = 420) {
+      arena.classList.remove(className);
+      void arena.offsetWidth;
+      arena.classList.add(className);
+      window.setTimeout(() => arena.classList.remove(className), ms);
+    }
+
+    function startRunner() {
+      const game = GAMES.runner;
+      document.getElementById('playView').innerHTML = `
+        <div class="play-layout">
+          <section id="runnerArena" class="arena runner-stage">
+            ${stageNav()}
+            ${coachBadge(game)}
+            <div class="runner-horizon">NUMBER RUN</div>
+            <div class="runner-floor"></div>
+            <div class="runner-road-lines"></div>
+            <div id="runnerBoss" class="runner-boss">
+              <div class="boss-name">FINAL BOSS</div>
+              <div class="boss-hpbar"><div id="bossHpFill" class="boss-hpfill"></div></div>
+              <div id="bossHpText" class="boss-hptext">HP 440 / 440</div>
+            </div>
+            <div class="gesture">左右を瞬間判断</div>
+            <div id="powerBubble" class="power-bubble">12</div>
+            <img id="runnerPlayer" class="runner-player" src="${SPRITE}idol-run.png" alt="" />
+            ${renderHud(game.name, [
+              { label: 'POWER', id: 'runnerPower', value: '12' },
+              { label: 'ROUND', id: 'runnerRound', value: '0/10' },
+              { label: 'BOSS', id: 'runnerBossHp', value: '440' },
+              { label: 'BEST', id: 'runnerBest', value: String(loadScores().runner || 0) }
+            ], '左右どちらの計算が強いか、一瞬で選ぶ。', game.assets)}
+          </section>
+        </div>
+      `;
+      const arena = document.getElementById('runnerArena');
+      const player = document.getElementById('runnerPlayer');
+      const bubble = document.getElementById('powerBubble');
+      const boss = document.getElementById('runnerBoss');
+      const bossFill = document.getElementById('bossHpFill');
+      const bossText = document.getElementById('bossHpText');
+      const lanes = [30, 70];
+      const bossHp = 440;
+      const gatePlan = [
+        [{ type: 'add', value: 16 }, { type: 'mul', value: 1.80 }],
+        [{ type: 'add', value: 18 }, { type: 'mul', value: 1.70 }],
+        [{ type: 'add', value: 20 }, { type: 'mul', value: 1.55 }],
+        [{ type: 'add', value: 26 }, { type: 'mul', value: 1.45 }],
+        [{ type: 'add', value: 31 }, { type: 'mul', value: 1.38 }],
+        [{ type: 'add', value: 38 }, { type: 'mul', value: 1.32 }],
+        [{ type: 'add', value: 45 }, { type: 'mul', value: 1.28 }],
+        [{ type: 'add', value: 52 }, { type: 'mul', value: 1.25 }],
+        [{ type: 'add', value: 60 }, { type: 'mul', value: 1.22 }],
+        [{ type: 'add', value: 72 }, { type: 'mul', value: 1.20 }]
+      ];
+      let lane = 0;
+      let power = 12;
+      let round = 0;
+      let currentGate = null;
+      let gateY = -140;
+      let active = false;
+      let last = performance.now();
+      let raf = 0;
+      let finished = false;
+      let bestChoiceCount = 0;
+
+      function render() {
+        player.style.left = `calc(${lanes[lane]}% - ${player.offsetWidth / 2}px)`;
+        player.src = lane === 0 ? `${SPRITE}idol-left.png` : `${SPRITE}idol-right.png`;
+        bubble.style.left = `${lanes[lane]}%`;
+        bubble.textContent = power;
+        document.getElementById('runnerPower').textContent = power;
+        document.getElementById('runnerRound').textContent = `${round}/${gatePlan.length}`;
+        document.getElementById('runnerBossHp').textContent = bossHp;
+        document.getElementById('runnerBest').textContent = loadScores().runner || 0;
+        arena.classList.toggle('fever', power >= bossHp);
+        if (currentGate) {
+          currentGate.nodes.forEach((node, index) => node.classList.toggle('selected', index === lane));
+        }
+      }
+
+      function setLaneFromPointer(event) {
+        if (!active || finished) return;
+        const rect = arena.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        lane = x < rect.width / 2 ? 0 : 1;
+        render();
+      }
+
+      function opLabel(op) {
+        return op.type === 'add' ? `+${op.value}` : `×${op.value.toFixed(2).replace(/0$/, '')}`;
+      }
+
+      function applyOp(base, op) {
+        return op.type === 'add' ? base + op.value : Math.floor(base * op.value);
+      }
+
+      function setStatus(text) {
+        document.getElementById('gameStatus').textContent = text;
+      }
+
+      function shufflePair(pair, index) {
+        const copy = pair.map(op => ({ ...op }));
+        return index % 2 === 0 ? copy : [copy[1], copy[0]];
+      }
+
+      function spawnGate() {
+        if (round >= gatePlan.length) {
+          startBoss();
+          return;
+        }
+        const pair = shufflePair(gatePlan[round], round);
+        const pairNode = document.createElement('div');
+        pairNode.className = 'gate-pair';
+        const nodes = pair.map((op, index) => {
+          const node = document.createElement('div');
+          const next = applyOp(power, op);
+          node.className = 'math-gate';
+          node.style.left = `${lanes[index]}%`;
+          node.innerHTML = `<strong>${opLabel(op)}</strong><span>${power} → ${next}</span>`;
+          pairNode.appendChild(node);
+          return node;
+        });
+        arena.appendChild(pairNode);
+        gateY = -128;
+        currentGate = { node: pairNode, ops: pair, nodes };
+        setStatus('左右どちらがPOWERを伸ばすか選んで。');
+        render();
+      }
+
+      function resolveGate() {
+        if (!currentGate) return;
+        const op = currentGate.ops[lane];
+        const options = currentGate.ops.map(choice => applyOp(power, choice));
+        const oldPower = power;
+        const nextPower = applyOp(power, op);
+        if (nextPower >= Math.max(...options)) bestChoiceCount += 1;
+        power = nextPower;
+        round += 1;
+        currentGate.node.remove();
+        currentGate = null;
+        bubble.classList.remove('pop');
+        void bubble.offsetWidth;
+        bubble.classList.add('pop');
+        pulseArena(arena, 'combo-pulse');
+        floatText(arena, `${oldPower} → ${power}`, lanes[lane], 48, 'good');
+        setStatus(`${opLabel(op)} を選択。POWER ${power}`);
+        render();
+        window.setTimeout(spawnGate, 360);
+      }
+
+      function startBoss() {
+        if (finished) return;
+        active = false;
+        finished = true;
+        cancelAnimationFrame(raf);
+        boss.classList.add('show');
+        bossFill.style.width = '100%';
+        bossText.textContent = `HP ${bossHp} / ${bossHp}`;
+        setStatus('FINAL BOSS。POWERで攻撃。');
+        window.setTimeout(() => {
+          const remain = Math.max(0, bossHp - power);
+          const percent = Math.max(0, Math.round((remain / bossHp) * 100));
+          bossFill.style.width = `${percent}%`;
+          bossText.textContent = `HP ${remain} / ${bossHp}`;
+          pulseArena(arena, power >= bossHp ? 'combo-pulse' : 'miss-shake', power >= bossHp ? 520 : 320);
+          window.setTimeout(finish, 780);
+        }, 650);
+      }
+
+      function finish() {
+        const score = power;
+        const rank = power >= bossHp * 1.08 ? 'PERFECT' : power >= bossHp ? 'GREAT' : power >= bossHp * 0.88 ? 'GOOD' : 'MISS';
+        saveScore('runner', score);
+        const today = recordPlay('runner', score, rank);
+        setStatus(power >= bossHp ? 'BOSS撃破。判断勝ち。' : 'BOSS残存。もっと効率のいい選択を狙う。');
+        showResult(arena, {
+          gameKey: 'runner',
+          rank,
+          sprite: game.chibi,
+          lines: [`POWER ${power}`, `BOSS HP ${bossHp}`, `BEST CHOICE ${bestChoiceCount}/${gatePlan.length}`, `TODAY BEST ${today.best}`]
+        });
+      }
+
+      arena.addEventListener('pointerdown', setLaneFromPointer);
+      arena.addEventListener('pointermove', event => {
+        if (event.buttons || event.pointerType === 'touch') setLaneFromPointer(event);
+      });
+      render();
+      showLessonStart(arena, 'LESSON START!', game.name, () => {
+        active = true;
+        last = performance.now();
+        spawnGate();
+        raf = requestAnimationFrame(tick);
+      });
+
+      function tick(now) {
+        if (!active || finished) return;
+        const delta = Math.min(48, now - last);
+        last = now;
+        if (currentGate) {
+          gateY += delta * 0.24;
+          currentGate.node.style.top = `${gateY}px`;
+          currentGate.nodes.forEach((node, index) => node.classList.toggle('selected', index === lane));
+          if (gateY > arena.clientHeight - 240) resolveGate();
+        }
+        raf = requestAnimationFrame(tick);
+      }
+
+      cleanupGame = () => {
+        active = false;
+        finished = true;
+        cancelAnimationFrame(raf);
+        currentGate?.node.remove();
+      };
+    }
+
+    function startJump() {
+      const game = GAMES.jump;
+      const jumpAsset = '../assets/minigames/jump/';
+      document.getElementById('playView').innerHTML = `
+        <div class="play-layout">
+          <section id="jumpArena" class="arena jump-stage">
+            ${stageNav()}
+            ${coachBadge(game)}
+            <div class="jump-warning">長押しで高く跳ぶ</div>
+            <div class="jump-charge"><div id="jumpChargeFill" class="jump-charge-fill"></div></div>
+            <img id="jumpPlayer" class="jump-player" src="${jumpAsset}jump-run-a.png" alt="" />
+            ${renderHud(game.name, [
+              { label: 'DIST', id: 'jumpDistance', value: '0' },
+              { label: 'LIFE', id: 'jumpLife', value: '3' },
+              { label: 'SPEED', id: 'jumpSpeed', value: '1.0' },
+              { label: 'JUMP', id: 'jumpCount', value: '0' }
+            ], '押す長さで高さを変えて、障害物を越える。', game.assets)}
+          </section>
+        </div>
+      `;
+
+      const arena = document.getElementById('jumpArena');
+      const player = document.getElementById('jumpPlayer');
+      const chargeFill = document.getElementById('jumpChargeFill');
+      const groundBottom = 72;
+      const finishDistance = 620;
+      const obstacles = [
+        { src: `${jumpAsset}jump-obstacle-hurdle.png`, width: 104, mobileWidth: 86, clear: 54, label: 'LOW' },
+        { src: `${jumpAsset}jump-obstacle-roller.png`, width: 122, mobileWidth: 96, clear: 86, label: 'MID' },
+        { src: `${jumpAsset}jump-obstacle-blocks.png`, width: 128, mobileWidth: 102, clear: 132, label: 'HIGH' },
+        { src: `${jumpAsset}jump-obstacle-roller.png`, width: 142, mobileWidth: 110, clear: 108, label: 'LONG' }
+      ];
+      let active = false;
+      let ended = false;
+      let last = performance.now();
+      let distance = 0;
+      let life = 3;
+      let jumps = 0;
+      let y = 0;
+      let vy = 0;
+      let hold = false;
+      let holdMs = 0;
+      let grounded = true;
+      let runFrame = 0;
+      let spawnClock = 0;
+      let spawnGap = 920;
+      let speed = 0.38;
+      let tickTimer = 0;
+      let obstacleNodes = [];
+
+      function setStatus(text) {
+        document.getElementById('gameStatus').textContent = text;
+      }
+
+      function setHud() {
+        document.getElementById('jumpDistance').textContent = `${Math.floor(distance)}m`;
+        document.getElementById('jumpLife').textContent = life;
+        document.getElementById('jumpSpeed').textContent = `${(speed / 0.38).toFixed(1)}`;
+        document.getElementById('jumpCount').textContent = jumps;
+      }
+
+      function startPress(event) {
+        if (!active || ended || event.target.closest('[data-action]')) return;
+        hold = true;
+        holdMs = 0;
+        if (grounded) {
+          grounded = false;
+          vy = 9.2;
+          jumps += 1;
+          player.src = `${jumpAsset}jump-jump.png`;
+          setStatus('長押しで高度を伸ばす。離すと早く落ちる。');
+        }
+        setHud();
+      }
+
+      function endPress() {
+        hold = false;
+        holdMs = 0;
+      }
+
+      function spawnObstacle() {
+        const obstacle = obstacles[Math.floor(Math.random() * obstacles.length)];
+        const img = document.createElement('img');
+        img.className = 'jump-obstacle';
+        img.src = obstacle.src;
+        img.dataset.clear = String(obstacle.clear);
+        img.dataset.label = obstacle.label;
+        img.dataset.hit = 'false';
+        img.dataset.passed = 'false';
+        img.dataset.x = String(arena.clientWidth + 80);
+        img.style.setProperty('--obstacle-w', `${obstacle.width}px`);
+        img.style.setProperty('--obstacle-w-mobile', `${obstacle.mobileWidth}px`);
+        img.style.left = `${arena.clientWidth + 80}px`;
+        arena.appendChild(img);
+        obstacleNodes.push(img);
+        setStatus(`${obstacle.label} 障害物。高さを見てジャンプ。`);
+      }
+
+      function playerBounds() {
+        const r = player.getBoundingClientRect();
+        const a = arena.getBoundingClientRect();
+        return {
+          left: r.left - a.left + r.width * 0.26,
+          right: r.right - a.left - r.width * 0.22
+        };
+      }
+
+      function finish(forceRank = '') {
+        if (ended) return;
+        ended = true;
+        active = false;
+        clearTimeout(tickTimer);
+        window.removeEventListener('pointerup', endPress);
+        window.removeEventListener('pointercancel', endPress);
+        obstacleNodes.forEach(node => node.remove());
+        obstacleNodes = [];
+        const score = Math.max(0, Math.floor(distance + life * 120));
+        const rank = forceRank || (distance >= finishDistance && life === 3 ? 'PERFECT' : distance >= finishDistance ? 'GREAT' : distance >= finishDistance * 0.68 ? 'GOOD' : 'MISS');
+        saveScore('jump', score);
+        const today = recordPlay('jump', score, rank);
+        showResult(arena, {
+          gameKey: 'jump',
+          rank,
+          sprite: game.chibi,
+          lines: [`DIST ${Math.floor(distance)}m`, `LIFE ${life}`, `JUMP ${jumps}`, `TODAY BEST ${today.best}`]
+        });
+      }
+
+      function tick(now) {
+        if (!active || ended) return;
+        const delta = Math.min(48, now - last);
+        last = now;
+        distance += delta * 0.018 * (speed / 0.38);
+        speed = Math.min(0.58, speed + delta * 0.000015);
+        spawnClock += delta;
+
+        if (hold && !grounded) {
+          holdMs = Math.min(420, holdMs + delta);
+          if (holdMs < 340 && y < 210) vy += 0.28;
+          chargeFill.style.width = `${Math.round((holdMs / 340) * 100)}%`;
+        } else {
+          chargeFill.style.width = '0%';
+        }
+
+        if (!grounded) {
+          y += vy;
+          vy -= 0.47;
+          if (y <= 0) {
+            y = 0;
+            vy = 0;
+            grounded = true;
+            player.src = `${jumpAsset}${runFrame ? 'jump-run-b.png' : 'jump-run-a.png'}`;
+          }
+        } else {
+          runFrame = Math.floor(now / 130) % 2;
+          player.src = `${jumpAsset}${runFrame ? 'jump-run-b.png' : 'jump-run-a.png'}`;
+        }
+        player.style.bottom = `${groundBottom + y}px`;
+        player.style.transform = grounded ? 'scale(1)' : `scale(${1 + Math.min(y, 160) / 1300})`;
+
+        if (spawnClock > spawnGap) {
+          spawnClock = 0;
+          spawnGap = 760 + Math.random() * Math.max(160, 560 - distance * 0.55);
+          spawnObstacle();
+        }
+
+        const p = playerBounds();
+        obstacleNodes = obstacleNodes.filter(node => {
+          const x = Number(node.dataset.x) - delta * speed;
+          node.dataset.x = String(x);
+          node.style.left = `${x}px`;
+          const w = node.getBoundingClientRect().width;
+          const overlap = x < p.right && x + w > p.left;
+          const clear = Number(node.dataset.clear);
+          if (overlap && node.dataset.hit === 'false' && y < clear) {
+            node.dataset.hit = 'true';
+            life -= 1;
+            pulseArena(arena, 'miss-shake', 300);
+            floatText(arena, 'HIT', 44, 42, 'bad');
+            setStatus(`HIT。必要高度 ${clear} / 現在 ${Math.floor(y)}`);
+            if (life <= 0) {
+              setHud();
+              window.setTimeout(() => finish('MISS'), 420);
+            }
+          }
+          if (x + w < p.left && node.dataset.passed === 'false' && node.dataset.hit === 'false') {
+            node.dataset.passed = 'true';
+            floatText(arena, 'CLEAR', 46, 42, 'good');
+          }
+          if (x + w < -80) {
+            node.remove();
+            return false;
+          }
+          return true;
+        });
+
+        setHud();
+        if (distance >= finishDistance) {
+          setStatus('完走。リザルトへ。');
+          window.setTimeout(() => finish(), 360);
+          return;
+        }
+        tickTimer = window.setTimeout(() => tick(performance.now()), 16);
+      }
+
+      arena.addEventListener('pointerdown', startPress);
+      window.addEventListener('pointerup', endPress);
+      window.addEventListener('pointercancel', endPress);
+      setHud();
+      showLessonStart(arena, 'JUMP!', game.name, () => {
+        active = true;
+        last = performance.now();
+        tickTimer = window.setTimeout(() => tick(performance.now()), 16);
+      });
+      cleanupGame = () => {
+        active = false;
+        ended = true;
+        clearTimeout(tickTimer);
+        window.removeEventListener('pointerup', endPress);
+        window.removeEventListener('pointercancel', endPress);
+        obstacleNodes.forEach(node => node.remove());
+      };
+    }
+
+    function startReflex() {
+      const game = GAMES.reflex;
+      document.getElementById('playView').innerHTML = `
+        <div class="play-layout">
+          <section id="dojoArena" class="arena dojo-stage">
+            ${stageNav()}
+            ${coachBadge(game)}
+            <div class="dojo-flash"></div>
+            <div class="slash-effect"></div>
+            <div id="dojoCall" class="dojo-call">構えて!!</div>
+            <img id="fighter" class="fighter ready" src="${SPRITE}idol-ready.png" alt="" />
+            ${renderHud(game.name, [
+              { label: 'LEVEL', id: 'reflexLevel', value: '1' },
+              { label: 'TIME', id: 'reflexTime', value: '-' },
+              { label: 'WIN', id: 'reflexWins', value: '0' },
+              { label: 'LIMIT', id: 'reflexLimit', value: '485 ms' }
+            ], '合図が出た瞬間に、道場をタップ。', game.assets)}
+          </section>
+        </div>
+      `;
+      const arena = document.getElementById('dojoArena');
+      const call = document.getElementById('dojoCall');
+      const fighter = document.getElementById('fighter');
+      let level = 1;
+      let wins = 0;
+      let misses = 0;
+      let canStrike = false;
+      let waiting = false;
+      let startedAt = 0;
+      let timeout = 0;
+      let locked = false;
+      let ended = false;
+
+      function setFighter(state, src) {
+        fighter.className = `fighter ${state}`;
+        fighter.src = `${SPRITE}${src}`;
+      }
+
+      function setStatus(text) {
+        document.getElementById('gameStatus').textContent = text;
+      }
+
+      function setHud(ms = '-') {
+        const limit = Math.max(175, 520 - level * 35);
+        document.getElementById('reflexLevel').textContent = level;
+        document.getElementById('reflexWins').textContent = wins;
+        document.getElementById('reflexLimit').textContent = `${Math.round(limit)} ms`;
+        document.getElementById('reflexTime').textContent = ms;
+      }
+
+      function prepareRound() {
+        if (ended) return;
+        clearTimeout(timeout);
+        locked = false;
+        waiting = true;
+        canStrike = false;
+        arena.classList.remove('cue', 'slash-now');
+        call.textContent = '構えて!!';
+        setFighter('ready', 'idol-ready.png');
+        setStatus('まだ動かない。合図を待つ。');
+        const wait = 850 + Math.random() * Math.max(420, 1800 - level * 120);
+        timeout = setTimeout(() => {
+          canStrike = true;
+          startedAt = performance.now();
+          call.textContent = '打て!';
+          pulseArena(arena, 'cue', 520);
+          setStatus('今。画面をタップ。');
+        }, wait);
+      }
+
+      function resolveTap(event) {
+        if (event.target.closest('[data-action]')) return;
+        if (ended) return;
+        if (locked) {
+          prepareRound();
+          return;
+        }
+        if (!waiting) {
+          prepareRound();
+          return;
+        }
+        if (!canStrike) {
+          clearTimeout(timeout);
+          waiting = false;
+          locked = true;
+          misses += 1;
+          level = Math.max(1, level - 1);
+          call.textContent = '早すぎ!';
+          setFighter('hurt', 'idol-hurt.png');
+          setStatus(`合図前に動いた。MISS ${misses}/3`);
+          pulseArena(arena, 'miss-shake', 260);
+          floatText(arena, 'FAST', 50, 42, 'bad');
+          setHud('-');
+          if (misses >= 3) window.setTimeout(() => finishReflex('MISS'), 520);
+          return;
+        }
+        const ms = performance.now() - startedAt;
+        const limit = Math.max(175, 520 - level * 35);
+        waiting = false;
+        canStrike = false;
+        locked = true;
+        if (ms <= limit) {
+          wins += 1;
+          level += 1;
+          call.textContent = '勝利!';
+          setFighter('strike', 'idol-strike.png');
+          pulseArena(arena, 'slash-now', 420);
+          saveScore('reflex', wins);
+          floatText(arena, `${Math.round(ms)}ms`, 50, 42, 'good');
+          setTimeout(() => {
+            if (locked) setFighter('win', 'idol-win.png');
+          }, 260);
+          setStatus(wins >= 5 ? '5勝達成。リザルトへ。' : '成功。次は少しシビア。もう一度タップで再開。');
+          if (wins >= 5) window.setTimeout(() => finishReflex(), 720);
+        } else {
+          misses += 1;
+          level = Math.max(1, level - 1);
+          call.textContent = '遅い!';
+          setFighter('hurt', 'idol-hurt.png');
+          setStatus(`間に合わなかった。MISS ${misses}/3`);
+          pulseArena(arena, 'miss-shake', 260);
+          floatText(arena, 'SLOW', 50, 42, 'bad');
+          if (misses >= 3) window.setTimeout(() => finishReflex('MISS'), 520);
+        }
+        setHud(`${Math.round(ms)} ms`);
+      }
+
+      function finishReflex(forceRank = '') {
+        if (ended) return;
+        ended = true;
+        clearTimeout(timeout);
+        waiting = false;
+        canStrike = false;
+        locked = true;
+        const rank = forceRank || rankByScore(wins, { perfect: 5, great: 4, good: 2 });
+        saveScore('reflex', wins);
+        const today = recordPlay('reflex', wins, rank);
+        showResult(arena, {
+          gameKey: 'reflex',
+          rank,
+          sprite: game.chibi,
+          lines: [`WIN ${wins}`, `MISS ${misses}`, `TODAY BEST ${today.best}`, `LEVEL ${level}`]
+        });
+      }
+
+      setHud();
+      arena.addEventListener('pointerdown', resolveTap);
+      showLessonStart(arena, 'READY?', game.name, prepareRound);
+      cleanupGame = () => {
+        ended = true;
+        clearTimeout(timeout);
+      };
+    }
+
+    function startMemory() {
+      const game = GAMES.memory;
+      const orb = {
+        red: `${SPRITE}orb-red.png`,
+        blue: `${SPRITE}orb-blue.png`,
+        green: `${SPRITE}orb-green.png`,
+        yellow: `${SPRITE}orb-yellow.png`
+      };
+      document.getElementById('playView').innerHTML = `
+        <div class="play-layout">
+          <section id="memoryArena" class="arena memory-stage">
+            ${stageNav()}
+            ${coachBadge(game)}
+            <div class="light-rig">
+              <span class="stage-light" style="--orb: url('${orb.red}')" data-light="red"></span>
+              <span class="stage-light" style="--orb: url('${orb.blue}')" data-light="blue"></span>
+              <span class="stage-light" style="--orb: url('${orb.green}')" data-light="green"></span>
+              <span class="stage-light" style="--orb: url('${orb.yellow}')" data-light="yellow"></span>
+            </div>
+            <img class="memory-idol" src="${SPRITE}idol-memory.png" alt="" />
+            <div id="stream" class="stream"></div>
+            <div>
+              <div id="memoryHistory" class="sequence-history"></div>
+              <div class="color-pad-row">
+                <div class="color-pad" style="--orb: url('${orb.red}')" data-color="red"></div>
+                <div class="color-pad" style="--orb: url('${orb.blue}')" data-color="blue"></div>
+                <div class="color-pad" style="--orb: url('${orb.green}')" data-color="green"></div>
+                <div class="color-pad" style="--orb: url('${orb.yellow}')" data-color="yellow"></div>
+              </div>
+            </div>
+            ${renderHud(game.name, [
+              { label: 'ROUND', id: 'memoryRound', value: '1' },
+              { label: 'SCORE', id: 'memoryScore', value: '0' },
+              { label: 'LENGTH', id: 'memoryLength', value: '3' },
+              { label: 'INPUT', id: 'memoryInput', value: '0' }
+            ], '流れる色を覚える。', game.assets)}
+          </section>
+        </div>
+      `;
+      const colors = Object.keys(orb);
+      const stream = document.getElementById('stream');
+      const history = document.getElementById('memoryHistory');
+      const pads = [...document.querySelectorAll('.color-pad')];
+      const arena = document.getElementById('memoryArena');
+      const lights = Object.fromEntries([...document.querySelectorAll('[data-light]')].map(light => [light.dataset.light, light]));
+      let round = 1;
+      let score = 0;
+      let misses = 0;
+      let sequence = [];
+      let input = [];
+      let showing = false;
+      let ended = false;
+      let timers = [];
+
+      function setStatus(text) {
+        document.getElementById('gameStatus').textContent = text;
+      }
+
+      function renderInput() {
+        history.innerHTML = '';
+        input.forEach(color => {
+          const dot = document.createElement('span');
+          dot.className = 'history-dot';
+          dot.style.setProperty('--orb', `url('${orb[color]}')`);
+          history.appendChild(dot);
+        });
+        document.getElementById('memoryInput').textContent = input.length;
+      }
+
+      function setHud() {
+        document.getElementById('memoryRound').textContent = round;
+        document.getElementById('memoryScore').textContent = score;
+        document.getElementById('memoryLength').textContent = round + 2;
+        document.getElementById('memoryInput').textContent = input.length;
+      }
+
+      function showSequence() {
+        if (ended) return;
+        timers.forEach(clearTimeout);
+        timers = [];
+        input = [];
+        renderInput();
+        setHud();
+        sequence = Array.from({ length: round + 2 }, () => colors[Math.floor(Math.random() * colors.length)]);
+        showing = true;
+        arena.classList.remove('inputting');
+        arena.classList.add('listening');
+        stream.innerHTML = '';
+        setStatus('憶えて。色が右から左へ流れます。');
+        sequence.forEach((color, index) => {
+          timers.push(setTimeout(() => {
+            lights[color]?.classList.add('lit');
+            const img = document.createElement('img');
+            img.className = 'memory-dot';
+            img.src = orb[color];
+            stream.appendChild(img);
+            timers.push(setTimeout(() => lights[color]?.classList.remove('lit'), 360));
+            timers.push(setTimeout(() => img.remove(), 980));
+          }, index * 650));
+        });
+        timers.push(setTimeout(() => {
+          showing = false;
+          arena.classList.remove('listening');
+          arena.classList.add('inputting');
+          setStatus('同じ順番で色をタップ。必要数で自動判定。');
+        }, sequence.length * 650 + 280));
+      }
+
+      function judgeIfReady() {
+        if (input.length < sequence.length) return;
+        const ok = sequence.every((color, index) => color === input[index]);
+        showing = true;
+        if (ok) {
+          score += 1;
+          round += 1;
+          saveScore('memory', score);
+          pulseArena(arena, 'combo-pulse');
+          floatText(arena, 'OK', 50, 46, 'good');
+          setStatus('正解。次のラウンドへ。');
+          if (score >= 5) {
+            timers.push(setTimeout(() => finishMemory(), 720));
+            return;
+          }
+        } else {
+          misses += 1;
+          round = Math.max(1, round - 1);
+          pulseArena(arena, 'miss-shake', 260);
+          floatText(arena, 'MISS', 50, 46, 'bad');
+          setStatus(`不正解。MISS ${misses}/3`);
+          if (misses >= 3) {
+            timers.push(setTimeout(() => finishMemory('MISS'), 720));
+            return;
+          }
+        }
+        setHud();
+        timers.push(setTimeout(showSequence, 1250));
+      }
+
+      function finishMemory(forceRank = '') {
+        if (ended) return;
+        ended = true;
+        timers.forEach(clearTimeout);
+        showing = true;
+        const rank = forceRank || rankByScore(score, { perfect: 5, great: 4, good: 2 });
+        saveScore('memory', score);
+        const today = recordPlay('memory', score, rank);
+        showResult(arena, {
+          gameKey: 'memory',
+          rank,
+          sprite: game.chibi,
+          lines: [`SCORE ${score}`, `MISS ${misses}`, `TODAY BEST ${today.best}`, `ROUND ${round}`]
+        });
+      }
+
+      pads.forEach(pad => {
+        pad.addEventListener('pointerdown', event => {
+          event.preventDefault();
+          if (ended || showing || !sequence.length) return;
+          const color = pad.dataset.color;
+          pad.classList.add('hit');
+          lights[color]?.classList.add('lit');
+          setTimeout(() => pad.classList.remove('hit'), 150);
+          setTimeout(() => lights[color]?.classList.remove('lit'), 180);
+          input.push(color);
+          renderInput();
+          judgeIfReady();
+        });
+      });
+
+      setHud();
+      showLessonStart(arena, 'REMEMBER!', game.name, showSequence);
+      cleanupGame = () => {
+        ended = true;
+        timers.forEach(clearTimeout);
+      };
+    }
+
+    document.addEventListener('click', event => {
+      const select = event.target.closest('[data-select-game]');
+      if (select) {
+        selectedGame = select.dataset.selectGame;
+        startSelectedGame();
+        return;
+      }
+      const idea = event.target.closest('[data-select-idea]');
+      if (idea) {
+        showIdea(idea.dataset.selectIdea);
+        return;
+      }
+      const action = event.target.closest('[data-action]')?.dataset.action;
+      if (!action) return;
+      if (action === 'start') startSelectedGame();
+      if (action === 'howto') showHowto();
+      if (action === 'select') showSelect();
+      if (action === 'lobby') showSelect();
+      if (action === 'restart') restartGame();
+    });
+    updateGameCards();
+  </script>
+</body>
+</html>

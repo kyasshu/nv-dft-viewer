@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="320" viewBox="0 0 760 320" role="img" aria-label="ログイン!">
+  <defs>
+    <linearGradient id="fill" x1="80" x2="690" y1="72" y2="250" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffe25c"/>
+      <stop offset="0.42" stop-color="#ff9d3d"/>
+      <stop offset="1" stop-color="#ff4fb3"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="100" x2="640" y1="28" y2="160" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-35%" width="140%" height="190%">
+      <feDropShadow dx="0" dy="18" stdDeviation="13" flood-color="#3c2a80" flood-opacity="0.26"/>
+      <feDropShadow dx="0" dy="4" stdDeviation="0" flood-color="#783490" flood-opacity="0.42"/>
+    </filter>
+  </defs>
+  <path d="M74 166 C55 90 123 41 223 61 C275 13 367 21 405 68 C484 35 604 59 622 134 C714 142 724 252 633 271 C563 304 482 287 434 261 C370 309 264 300 223 251 C142 278 83 236 74 166Z" fill="#ffffff" opacity="0.94"/>
+  <path d="M74 166 C55 90 123 41 223 61 C275 13 367 21 405 68 C484 35 604 59 622 134 C714 142 724 252 633 271 C563 304 482 287 434 261 C370 309 264 300 223 251 C142 278 83 236 74 166Z" fill="none" stroke="#ffffff" stroke-width="16" opacity="0.92"/>
+  <circle cx="126" cy="67" r="18" fill="#ffe25c"/>
+  <circle cx="641" cy="75" r="14" fill="#35c7ff"/>
+  <circle cx="682" cy="216" r="16" fill="#8c6bff"/>
+  <path d="M104 52 L116 23 L128 52 L157 64 L128 76 L116 105 L104 76 L75 64Z" fill="#ff4fb3"/>
+  <path d="M631 38 L640 17 L649 38 L670 47 L649 56 L640 77 L631 56 L610 47Z" fill="#ffe25c"/>
+  <text x="380" y="208" text-anchor="middle" font-family="'Arial Black','Yu Gothic UI','Hiragino Sans',sans-serif" font-size="112" font-weight="900" fill="#24304f" stroke="#ffffff" stroke-width="20" paint-order="stroke" filter="url(#softShadow)">ログイン!</text>
+  <text x="380" y="208" text-anchor="middle" font-family="'Arial Black','Yu Gothic UI','Hiragino Sans',sans-serif" font-size="112" font-weight="900" fill="url(#fill)">ログイン!</text>
+  <path d="M150 92 C266 34 503 42 612 101" fill="none" stroke="url(#shine)" stroke-width="22" stroke-linecap="round" opacity="0.78"/>
+</svg>

@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>装置操作マニュアル | NV center training</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23ffe066'/%3E%3Ccircle cx='12' cy='16' r='5' fill='%232d6cdf'/%3E%3Ccircle cx='21' cy='16' r='5' fill='none' stroke='%23202124' stroke-width='3'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #202124;
+      --muted: #5f6368;
+      --line: #d8dfe8;
+      --yellow: #ffe066;
+      --blue: #2d6cdf;
+      --cyan: #69d2ff;
+      --game-pink: #ff4fb3;
+      --game-orange: #ff9d3d;
+      --game-yellow: #ffe25c;
+      --game-cyan: #35c7ff;
+      --game-blue: #4f7dff;
+      --game-violet: #8c6bff;
+      --game-navy: #24304f;
+      --game-shadow: 0 18px 48px rgba(53, 86, 166, 0.18), 0 8px 18px rgba(53, 199, 255, 0.10);
+      font-family: "Segoe UI", "Yu Gothic UI", "Hiragino Sans", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 12%, rgba(53, 199, 255, 0.38), transparent 30%),
+        radial-gradient(circle at 90% 20%, rgba(255, 226, 92, 0.34), transparent 28%),
+        radial-gradient(circle at 78% 88%, rgba(140, 107, 255, 0.16), transparent 30%),
+        linear-gradient(135deg, #f5fbff 0%, #fff 48%, #fff8e3 100%);
+    }
+
+    .shell {
+      width: min(1120px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 22px 0 42px;
+      display: grid;
+      gap: 18px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .kicker {
+      width: fit-content;
+      margin: 0 0 8px;
+      padding: 5px 10px;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--game-blue), var(--game-cyan));
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+      box-shadow: 0 8px 18px rgba(79, 125, 255, 0.22);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 7vw, 64px);
+      line-height: 0.96;
+      color: var(--game-navy);
+      text-shadow: 3px 3px 0 rgba(255, 226, 92, 0.95), 6px 6px 0 rgba(53, 199, 255, 0.18);
+      letter-spacing: 0;
+    }
+
+    .lead {
+      margin: 10px 0 0;
+      max-width: 780px;
+      color: #485465;
+      font-weight: 700;
+      line-height: 1.7;
+      display: none;
+    }
+
+    .nav,
+    .equipment-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    a.button,
+    button {
+      min-height: 40px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(79, 125, 255, 0.28);
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ffffff, #eef8ff);
+      color: var(--game-blue);
+      font-weight: 900;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(79, 125, 255, 0.16);
+    }
+
+    button.active {
+      background: linear-gradient(135deg, var(--game-yellow), #fff2a6);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(255, 157, 61, 0.18);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      gap: 16px;
+    }
+
+    .coach,
+    .panel {
+      border: 1px solid rgba(79, 125, 255, 0.24);
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.84));
+      box-shadow: var(--game-shadow);
+    }
+
+    .coach {
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 10px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    .coach img {
+      width: min(170px, 80%);
+      aspect-ratio: 1;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 16px rgba(0,0,0,0.18));
+    }
+
+    .coach p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+      font-weight: 700;
+    }
+
+    .panel {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .manual-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 12px;
+    }
+
+    .manual-head h2 {
+      margin: 0;
+      font-size: clamp(24px, 4vw, 38px);
+    }
+
+    .tag {
+      min-height: 30px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 10px;
+      border: 1px solid rgba(79, 125, 255, 0.28);
+      border-radius: 999px;
+      background: linear-gradient(135deg, #eef7ff, #ffffff);
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .card {
+      min-height: 150px;
+      padding: 12px;
+      border: 1px solid rgba(79, 125, 255, 0.18);
+      border-radius: 10px;
+      background: linear-gradient(180deg, #ffffff, #fbfdff);
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .card ul {
+      margin: 0;
+      padding-left: 18px;
+      color: #4a5565;
+      line-height: 1.65;
+      font-weight: 700;
+    }
+
+    .note {
+      padding: 12px;
+      border: 1px solid rgba(255, 157, 61, 0.26);
+      border-radius: 10px;
+      background: linear-gradient(135deg, #fffdf1, #f2fbff);
+      color: #5a4b10;
+      font-weight: 800;
+      line-height: 1.65;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      resize: vertical;
+      padding: 10px 12px;
+      border: 1px solid rgba(79, 125, 255, 0.32);
+      border-radius: 8px;
+      background: #fff;
+      font: inherit;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 820px) {
+      header,
+      .layout,
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      header,
+      .manual-head {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div>
+        <p class="kicker">EQUIPMENT TRAINING</p>
+        <h1>装置操作マニュアル</h1>
+        <p class="lead">ここは正式な安全手順書ではなく、研究ノート用の入口です。実際の操作は必ず研究室のSOP、管理者の指示、装置予約ルールに従ってください。</p>
+      </div>
+      <nav class="nav" aria-label="navigation">
+        <a class="button" href="../index.html">タイトルへ</a>
+      </nav>
+    </header>
+
+    <div class="equipment-list" aria-label="equipment list">
+      <button type="button" data-device="EBEP" class="active">EBEP</button>
+      <button type="button" data-device="レーザー顕微鏡">レーザー顕微鏡</button>
+      <button type="button" data-device="ラマン顕微鏡">ラマン顕微鏡</button>
+      <button type="button" data-device="ODMR">ODMR</button>
+    </div>
+
+    <section class="layout">
+      <aside class="coach">
+        <img src="../assets/chibis/mio-manual.png" alt="黒瀬ミオのミニキャラ" />
+        <strong>黒瀬ミオ</strong>
+        <p>装置の確認項目を落ち着いて整理する担当です。</p>
+      </aside>
+      <main class="panel">
+        <div class="manual-head">
+          <div>
+            <h2 id="deviceName">EBEP</h2>
+            <p id="deviceSummary" class="lead"></p>
+          </div>
+          <span id="deviceTag" class="tag">electron beam</span>
+        </div>
+        <div class="cards">
+          <article class="card">
+            <h3>目的</h3>
+            <ul id="purpose"></ul>
+          </article>
+          <article class="card">
+            <h3>使う前</h3>
+            <ul id="before"></ul>
+          </article>
+          <article class="card">
+            <h3>基本の流れ</h3>
+            <ul id="steps"></ul>
+          </article>
+          <article class="card">
+            <h3>記録する値</h3>
+            <ul id="record"></ul>
+          </article>
+        </div>
+        <div id="note" class="note"></div>
+        <label>
+          自分用メモ
+          <textarea id="manualMemo" placeholder="装置担当者から聞いた注意、試料名、測定条件など"></textarea>
+        </label>
+      </main>
+    </section>
+  </div>
+  <script>
+    const devices = {
+      EBEP: {
+        tag: 'electron beam',
+        summary: '電子照射や電子線処理の条件を整理する入口です。低エネルギー電子ではknock-onより、電子励起・表面近傍キャリア生成・電荷状態変化を中心に記録します。',
+        purpose: ['照射エネルギー、電流密度、照射時間を記録する', 'NV形成や発光変化と線量を対応させる'],
+        before: ['試料固定、導電性基板、チャージアップ対策を確認する', 'ビーム条件と安全インターロックを確認する', '照射前PL、ラマン、顕微鏡像を残す'],
+        steps: ['試料位置合わせ', '低倍率または低電流で照射領域を確認', '本照射条件を設定', '照射後の観測へ進む'],
+        record: ['電子エネルギー eV/keV', '電流または電流密度', '照射時間と面積', '推定線量', '照射前後のPL変化'],
+        note: '低エネルギー電子では炭素空孔を直接作る説明ではなく、既存欠陥複合体の励起・再構成として整理すると筋が通ります。'
+      },
+      'レーザー顕微鏡': {
+        tag: 'optical mapping',
+        summary: '試料表面、照射痕、位置合わせ、PL測定候補位置を探すための入口です。',
+        purpose: ['照射位置と表面状態を確認する', 'PL測定やラマン測定の座標を決める'],
+        before: ['レーザー出力を低めから始める', '対物レンズ、焦点、試料高さを確認する', '焼けや光退色を避ける'],
+        steps: ['低倍率で全体確認', '照射領域へ移動', '焦点を合わせる', '画像と座標を保存'],
+        record: ['倍率', 'レーザー波長と出力', '露光時間', '試料座標', '観察した特徴'],
+        note: '電子照射前後で同じ場所を見られるように、画像ファイル名と座標メモを必ず残します。'
+      },
+      'ラマン顕微鏡': {
+        tag: 'Raman / PL',
+        summary: 'ダイヤモンドの結晶性、グラファイト化、応力、発光背景の変化を確認する入口です。',
+        purpose: ['ダイヤモンドピークと欠陥由来の変化を比較する', '照射で熱的損傷が出ていないか確認する'],
+        before: ['波長、出力、積算時間を確認する', '標準試料で波数校正を確認する', '過度なレーザー加熱を避ける'],
+        steps: ['焦点合わせ', '低出力で試し取り', '条件を固定してマップまたは点測定', 'ベースラインとピーク位置を比較'],
+        record: ['レーザー波長', '出力', '積算時間', 'ピーク位置', 'ピーク幅', 'PL背景'],
+        note: 'NV形成だけでなく、試料が壊れていないことを示すためにもラマンは重要です。'
+      },
+      ODMR: {
+        tag: 'spin readout',
+        summary: 'NV中心のスピン共鳴を見て、NVの存在や環境変化を確認する入口です。',
+        purpose: ['NV由来のODMRディップを確認する', '磁場、歪み、温度変化の手がかりを得る'],
+        before: ['レーザー、マイクロ波、検出器の安全確認', '基準試料または既知NVで動作確認', 'PL強度が十分か確認'],
+        steps: ['PLスポット探索', 'マイクロ波周波数掃引', 'ディップ位置とコントラスト確認', '条件を保存して比較'],
+        record: ['レーザー出力', 'マイクロ波出力', '掃引範囲', '共鳴周波数', 'コントラスト', '積算時間'],
+        note: 'PL増加だけではNV数増加と電荷状態変化を分けにくいので、ODMRは補助証拠として扱います。'
+      }
+    };
+
+    const memo = document.getElementById('manualMemo');
+    let current = 'EBEP';
+
+    function fillList(id, items) {
+      document.getElementById(id).innerHTML = items.map(item => `<li>${item}</li>`).join('');
+    }
+
+    function selectDevice(name) {
+      current = name;
+      const data = devices[name];
+      document.querySelectorAll('[data-device]').forEach(button => button.classList.toggle('active', button.dataset.device === name));
+      document.getElementById('deviceName').textContent = name;
+      document.getElementById('deviceSummary').textContent = data.summary;
+      document.getElementById('deviceTag').textContent = data.tag;
+      fillList('purpose', data.purpose);
+      fillList('before', data.before);
+      fillList('steps', data.steps);
+      fillList('record', data.record);
+      document.getElementById('note').textContent = data.note;
+      memo.value = localStorage.getItem(`nvDftManualMemo.${name}`) || '';
+    }
+
+    document.querySelectorAll('[data-device]').forEach(button => {
+      button.addEventListener('click', () => selectDevice(button.dataset.device));
+    });
+    memo.addEventListener('input', () => {
+      localStorage.setItem(`nvDftManualMemo.${current}`, memo.value);
+    });
+    selectDevice(current);
+  </script>
+</body>
+</html>

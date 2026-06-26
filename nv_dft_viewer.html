@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NV center DFT model viewer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23ffe066'/%3E%3Ccircle cx='12' cy='16' r='5' fill='%232d6cdf'/%3E%3Ccircle cx='21' cy='16' r='5' fill='none' stroke='%23202124' stroke-width='3'/%3E%3C/svg%3E" />
   <style>
     :root {
       color-scheme: light;
@@ -20,6 +21,17 @@
       --ok: #247a52;
       --warn: #b25512;
       --shadow: rgba(0, 0, 0, 0.18);
+      --game-pink: #ff4fb3;
+      --game-rose: #ff7a8a;
+      --game-orange: #ff9d3d;
+      --game-yellow: #ffe25c;
+      --game-cyan: #35c7ff;
+      --game-blue: #4f7dff;
+      --game-violet: #8c6bff;
+      --game-navy: #24304f;
+      --game-glass: rgba(255, 255, 255, 0.9);
+      --game-line: rgba(79, 125, 255, 0.22);
+      --game-shadow: 0 18px 48px rgba(53, 86, 166, 0.22), 0 8px 18px rgba(255, 79, 179, 0.14);
       font-family: "Segoe UI", "Yu Gothic UI", "Hiragino Sans", sans-serif;
     }
 
@@ -50,7 +62,9 @@
       overflow: hidden;
     }
 
-    body.title-active .app {
+    body.title-active .app,
+    body.training-active .app,
+    body.simulation-picker-active .app {
       visibility: hidden;
     }
 
@@ -58,43 +72,56 @@
       position: fixed;
       inset: 0;
       z-index: 20;
-      display: grid;
-      place-items: center;
-      padding: 28px;
+      display: block;
+      padding: 0;
       overflow: auto;
       color: #16191d;
-      background:
-        radial-gradient(circle at 18% 18%, rgba(242, 201, 76, 0.24), transparent 34%),
-        radial-gradient(circle at 84% 78%, rgba(45, 108, 223, 0.14), transparent 36%),
-        linear-gradient(180deg, #ffffff 0%, #f4f7f9 100%);
+      background: #111827;
       transition: opacity 220ms ease, visibility 220ms ease;
     }
 
-    body.viewer-started .splash {
+    .splash::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(8, 12, 18, 0.02) 0%, rgba(8, 12, 18, 0.03) 35%, rgba(21, 24, 58, 0.54) 100%),
+        radial-gradient(circle at 16% 18%, rgba(255, 226, 92, 0.24), transparent 28%),
+        radial-gradient(circle at 82% 20%, rgba(53, 199, 255, 0.26), transparent 30%),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.18) 0%, transparent 34%, transparent 70%, rgba(255, 255, 255, 0.14) 100%);
+    }
+
+    body.viewer-started .splash,
+    body.training-active .splash,
+    body.simulation-picker-active .splash {
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
     }
 
     .splash-inner {
-      width: min(1180px, 100%);
-      margin: auto 0;
-      display: grid;
-      grid-template-columns: minmax(320px, 1fr) minmax(300px, 0.92fr);
-      align-items: center;
-      gap: clamp(28px, 5vw, 64px);
+      position: relative;
+      z-index: 1;
+      width: min(720px, calc(100% - 28px));
+      min-height: 100dvh;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: max(50dvh, env(safe-area-inset-top)) 0 max(16px, env(safe-area-inset-bottom));
     }
 
     .guide-portrait {
-      position: relative;
-      width: min(620px, 100%);
-      aspect-ratio: 16 / 9;
-      justify-self: center;
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
-      border: 2px solid #202124;
-      border-radius: 8px;
-      background: #ffffff;
-      box-shadow: 8px 8px 0 #202124;
+      background: #111827;
     }
 
     .title-idol-image {
@@ -102,87 +129,178 @@
       height: 100%;
       display: block;
       object-fit: cover;
+      object-position: center center;
     }
 
     .title-idol-label {
-      position: absolute;
-      left: 14px;
-      bottom: 14px;
+      position: fixed;
+      left: clamp(12px, 3vw, 24px);
+      top: max(14px, env(safe-area-inset-top));
+      z-index: 2;
       display: inline-flex;
       align-items: center;
       min-height: 34px;
-      padding: 0 12px;
-      border: 1px solid rgba(32, 33, 36, 0.42);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.88);
-      color: #202124;
-      font-size: 13px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: #ffffff;
+      font-size: clamp(18px, 3.8vw, 28px);
+      font-weight: 950;
+      text-shadow: 0 3px 12px rgba(15, 22, 54, 0.55), 2px 2px 0 rgba(255, 79, 179, 0.45);
+      backdrop-filter: none;
+      box-shadow: none;
+    }
+
+    .idol-speech {
+      position: fixed;
+      left: clamp(12px, 3vw, 24px);
+      top: calc(max(14px, env(safe-area-inset-top)) + 38px);
+      z-index: 2;
+      max-width: min(340px, calc(100% - 36px));
+      padding: 8px 12px;
+      border-radius: 16px 16px 16px 4px;
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--game-navy);
+      font-size: clamp(13px, 2.7vw, 16px);
       font-weight: 850;
-      backdrop-filter: blur(8px);
+      line-height: 1.45;
+      box-shadow: 0 12px 24px rgba(36, 48, 79, 0.18);
+      backdrop-filter: blur(10px);
+    }
+
+    .idol-speech::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: -7px;
+      width: 14px;
+      height: 14px;
+      background: rgba(255, 255, 255, 0.78);
+      transform: rotate(45deg);
     }
 
     .splash-copy {
+      position: relative;
       display: grid;
-      gap: 18px;
-      align-content: center;
+      gap: 9px;
+      align-content: start;
+      padding: clamp(10px, 2.2vw, 16px);
+      max-height: calc(50dvh - max(16px, env(safe-area-inset-bottom)));
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.48);
+      border-radius: 18px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.80), rgba(255,255,255,0.58)),
+        radial-gradient(circle at 8% 0%, rgba(255, 226, 92, 0.36), transparent 32%),
+        radial-gradient(circle at 100% 16%, rgba(255, 79, 179, 0.18), transparent 30%);
+      box-shadow: var(--game-shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .splash-copy::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--game-pink), var(--game-yellow), var(--game-cyan), var(--game-violet));
+      pointer-events: none;
     }
 
     .splash-kicker {
       margin: 0;
-      color: #51606d;
+      color: var(--game-blue);
       font-size: 14px;
-      font-weight: 700;
+      font-weight: 900;
       letter-spacing: 0;
     }
 
     .splash-copy h1 {
       margin: 0;
-      font-size: clamp(34px, 5vw, 64px);
-      line-height: 1.02;
+      font-size: clamp(24px, 4.4vw, 42px);
+      line-height: 1.06;
       letter-spacing: 0;
+      color: var(--game-navy);
+      text-shadow:
+        2px 2px 0 rgba(255, 226, 92, 0.95),
+        4px 4px 0 rgba(255, 79, 179, 0.28);
     }
 
     .splash-message {
       margin: 0;
       width: min(560px, 100%);
       color: #3d4650;
-      font-size: clamp(16px, 2vw, 20px);
-      line-height: 1.65;
+      font-size: clamp(13px, 1.7vw, 16px);
+      line-height: 1.55;
+    }
+
+    .calendar-drawer-toggle {
+      width: 100%;
+      min-height: 28px;
+      padding: 0 12px;
+      border: 1px solid rgba(79, 125, 255, 0.36);
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ffffff, #eef8ff);
+      color: var(--game-blue);
+      font-weight: 900;
+      font-size: 12px;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(79, 125, 255, 0.16);
+    }
+
+    .calendar-drawer-toggle:hover {
+      transform: translate(1px, 1px);
+      box-shadow: 2px 2px 0 #202124;
+    }
+
+    .calendar-drawer-toggle:active {
+      transform: translate(3px, 3px);
+      box-shadow: 0 0 0 #202124;
     }
 
     .start-button {
-      width: fit-content;
+      width: 100%;
       min-width: 190px;
-      min-height: 52px;
+      min-height: 48px;
       padding: 0 22px;
-      border: 2px solid #202124;
+      border: 0;
       border-radius: 8px;
-      background: #f2c94c;
-      color: #202124;
-      font-weight: 850;
+      background: linear-gradient(135deg, var(--game-yellow) 0%, var(--game-orange) 46%, var(--game-pink) 100%);
+      color: #ffffff;
+      font-weight: 950;
       cursor: pointer;
-      box-shadow: 5px 5px 0 #202124;
+      box-shadow: 0 12px 24px rgba(255, 111, 83, 0.34), 0 3px 0 rgba(120, 52, 144, 0.38);
+      text-shadow: 0 1px 0 rgba(0,0,0,0.22);
     }
 
     .start-button:hover {
       transform: translate(1px, 1px);
-      box-shadow: 4px 4px 0 #202124;
+      box-shadow: 0 10px 20px rgba(255, 111, 83, 0.30), 0 2px 0 rgba(120, 52, 144, 0.38);
     }
 
     .start-button:active {
       transform: translate(4px, 4px);
-      box-shadow: 1px 1px 0 #202124;
+      box-shadow: 0 6px 12px rgba(255, 111, 83, 0.24);
     }
 
     .login-panel {
-      width: min(560px, 100%);
+      width: 100%;
       display: grid;
       gap: 12px;
-      margin-top: 4px;
-      padding: 14px;
-      border: 1px solid #d9dee5;
+      margin-top: 2px;
+      padding: 10px;
+      max-height: clamp(248px, 33dvh, 312px);
+      overflow: auto;
+      border: 1px solid var(--game-line);
       border-radius: 8px;
-      background: rgba(255, 255, 255, 0.82);
+      background: linear-gradient(180deg, rgba(255,255,255,0.62), rgba(245,250,255,0.50));
+    }
+
+    .splash-copy.calendar-collapsed {
+      max-height: calc(50dvh - max(16px, env(safe-area-inset-bottom)));
+    }
+
+    .splash-copy.calendar-collapsed .login-panel {
+      display: none;
     }
 
     .login-panel-head {
@@ -203,13 +321,17 @@
       display: inline-flex;
       align-items: center;
       padding: 0 10px;
-      border: 1px solid #202124;
+      border: 1px solid rgba(255, 157, 61, 0.5);
       border-radius: 999px;
-      background: #f2c94c;
-      color: #202124;
+      background: linear-gradient(135deg, var(--game-yellow), #fff2a6);
+      color: #6a3b00;
       font-size: 12px;
       font-weight: 800;
       white-space: nowrap;
+    }
+
+    .today-stamp.stamp-focus {
+      animation: stamp-focus-pop 1300ms ease both;
     }
 
     .calendar-controls {
@@ -224,8 +346,8 @@
       min-height: 34px;
       border: 1px solid #c8d0d8;
       border-radius: 8px;
-      background: #ffffff;
-      color: #202124;
+      background: linear-gradient(180deg, #ffffff, #f2f8ff);
+      color: var(--game-navy);
       font-weight: 750;
       cursor: pointer;
     }
@@ -240,7 +362,7 @@
     .login-calendar {
       display: grid;
       grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap: 5px;
+      gap: 3px;
     }
 
     .calendar-weekdays span {
@@ -252,12 +374,12 @@
 
     .calendar-day {
       position: relative;
-      aspect-ratio: 1;
+      min-height: 27px;
       display: grid;
       place-items: center;
-      border: 1px solid #dde3ea;
+      border: 1px solid rgba(79, 125, 255, 0.16);
       border-radius: 8px;
-      background: #ffffff;
+      background: rgba(255,255,255,0.92);
       color: #202124;
       font-size: 12px;
       font-weight: 750;
@@ -270,11 +392,12 @@
     }
 
     .calendar-day.today {
-      border-color: #2d6cdf;
+      border-color: var(--game-cyan);
+      background: #eefaff;
     }
 
     .calendar-day.selected {
-      outline: 2px solid #202124;
+      outline: 2px solid var(--game-pink);
       outline-offset: 1px;
     }
 
@@ -287,10 +410,10 @@
       height: 19px;
       display: grid;
       place-items: center;
-      border: 1px solid #b25512;
+      border: 1px solid #ff8a00;
       border-radius: 50%;
-      color: #b25512;
-      background: rgba(242, 201, 76, 0.24);
+      color: #d05c00;
+      background: rgba(255, 226, 92, 0.42);
       font-size: 10px;
       font-weight: 900;
       transform: rotate(-12deg);
@@ -309,18 +432,47 @@
       font-size: 12px;
       font-weight: 650;
       line-height: 1.45;
+      display: none;
     }
 
     .login-note {
       min-height: 104px;
       resize: vertical;
       padding: 10px 12px;
-      border: 2px solid #202124;
+      border: 1px solid rgba(79, 125, 255, 0.34);
       border-radius: 8px;
       background: #ffffff;
-      color: #202124;
+      color: var(--game-navy);
       font-size: 14px;
       line-height: 1.45;
+    }
+
+    .login-pop {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      z-index: 30;
+      width: min(620px, 88vw);
+      pointer-events: none;
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.42);
+      filter: drop-shadow(0 22px 30px rgba(36, 48, 79, 0.22));
+    }
+
+    .login-pop img {
+      width: 100%;
+      display: block;
+    }
+
+    .login-pop.show {
+      opacity: 1;
+    }
+
+    @keyframes stamp-focus-pop {
+      0% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 79, 179, 0); }
+      28% { transform: scale(1.18); box-shadow: 0 0 0 9px rgba(255, 79, 179, 0.24), 0 0 24px rgba(255, 226, 92, 0.8); }
+      62% { transform: scale(1.04); box-shadow: 0 0 0 5px rgba(53, 199, 255, 0.2), 0 0 18px rgba(255, 226, 92, 0.56); }
+      100% { transform: scale(1); box-shadow: 0 0 0 rgba(255, 79, 179, 0); }
     }
 
     .login-actions {
@@ -334,6 +486,509 @@
       color: #667080;
       font-size: 12px;
       line-height: 1.4;
+    }
+
+    .share-status:empty {
+      display: none;
+    }
+
+    .data-guard {
+      margin-top: 2px;
+      border: 1px solid rgba(79, 125, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.72);
+      color: #3d4650;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .data-guard summary {
+      min-height: 30px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      color: #202124;
+      font-weight: 850;
+      cursor: pointer;
+    }
+
+    .data-guard-body {
+      display: grid;
+      gap: 8px;
+      padding: 0 10px 10px;
+    }
+
+    .data-guard-body p {
+      margin: 0;
+    }
+
+    .data-guard-body ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .data-guard-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .data-guard-actions button {
+      min-height: 32px;
+      padding: 0 10px;
+      border: 1px solid #c8d0d8;
+      border-radius: 8px;
+      background: linear-gradient(180deg, #ffffff, #f5faff);
+      color: var(--game-navy);
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .training-hub {
+      position: fixed;
+      inset: 0;
+      z-index: 18;
+      display: none;
+      overflow: auto;
+      padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+      color: #172033;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.52), rgba(255,255,255,0.68)),
+        url('assets/title-idols/backgrounds/reika.png') center 38% / cover fixed,
+        radial-gradient(circle at 12% 10%, rgba(255, 226, 92, 0.46), transparent 28%),
+        radial-gradient(circle at 88% 12%, rgba(53, 199, 255, 0.34), transparent 30%),
+        radial-gradient(circle at 82% 88%, rgba(255, 79, 179, 0.18), transparent 30%),
+        linear-gradient(135deg, #fff7e7 0%, #ffffff 42%, #eaf6ff 100%);
+    }
+
+    body.training-active .training-hub {
+      display: block;
+    }
+
+    .training-shell {
+      width: min(900px, 100%);
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .training-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .training-title-block {
+      display: grid;
+      gap: 6px;
+    }
+
+    .training-kicker {
+      width: fit-content;
+      margin: 0;
+      padding: 5px 10px;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--game-pink), var(--game-violet));
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 900;
+      box-shadow: 0 8px 18px rgba(255, 79, 179, 0.28);
+    }
+
+    .training-top h1 {
+      margin: 0;
+      color: var(--game-navy);
+      font-size: clamp(32px, 7vw, 70px);
+      line-height: 0.96;
+      letter-spacing: 0;
+      text-shadow: 3px 3px 0 rgba(255, 226, 92, 0.95), 6px 6px 0 rgba(53, 199, 255, 0.2);
+    }
+
+    .training-lead {
+      margin: 0;
+      max-width: 760px;
+      color: #46515f;
+      font-size: 14px;
+      line-height: 1.6;
+      font-weight: 700;
+      display: none;
+    }
+
+    .training-return {
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid rgba(79, 125, 255, 0.28);
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ffffff, #eef8ff);
+      color: var(--game-blue);
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(79, 125, 255, 0.18);
+      white-space: nowrap;
+    }
+
+    .training-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid rgba(79, 125, 255, 0.24);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.42);
+      box-shadow: var(--game-shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .training-card {
+      position: relative;
+      min-height: 132px;
+      aspect-ratio: 2.35 / 1;
+      display: block;
+      padding: 0;
+      border: 1px solid rgba(79, 125, 255, 0.28);
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(8,16,40,0.02), rgba(8,16,40,0.20)),
+        var(--menu-bg),
+        linear-gradient(135deg, var(--card-accent, rgba(242, 201, 76, 0.28)), transparent 58%);
+      background-size: cover;
+      background-position: center 38%;
+      color: #202124;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 0 16px 34px rgba(53, 86, 166, 0.16), 0 6px 14px rgba(255, 79, 179, 0.10);
+      overflow: hidden;
+    }
+
+    .training-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(8,16,40,0.02) 44%, rgba(8,16,40,0.22) 100%);
+      pointer-events: none;
+    }
+
+    .training-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.72);
+      pointer-events: none;
+    }
+
+    .training-card.primed {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 36px rgba(255, 79, 179, 0.22), 0 10px 26px rgba(53, 199, 255, 0.16);
+      outline: 3px solid rgba(255, 79, 179, 0.74);
+      outline-offset: 2px;
+    }
+
+    .menu-chibi-wrap {
+      display: none;
+    }
+
+    .menu-chibi {
+      width: min(150px, 100%);
+      aspect-ratio: 1;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 14px rgba(22, 27, 34, 0.22));
+      transform-origin: 50% 90%;
+    }
+
+    .training-card.primed .menu-chibi {
+      animation: chibi-pop 680ms ease both;
+    }
+
+    .training-card h2 {
+      position: absolute;
+      z-index: 1;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 30px;
+      margin: 0;
+      padding: 0 12px;
+      border-radius: 8px;
+      background: rgba(36, 48, 79, 0.88);
+      color: #fff;
+      font-size: 16px;
+      line-height: 1.15;
+      box-shadow: 0 8px 18px rgba(36, 48, 79, 0.18);
+      text-align: center;
+    }
+
+    .training-card p {
+      position: relative;
+      z-index: 1;
+      margin: 6px 0 0;
+      color: #4a5565;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.45;
+      display: none;
+    }
+
+    .training-card small {
+      position: absolute;
+      z-index: 1;
+      display: inline-flex;
+      width: fit-content;
+      top: 10px;
+      left: 10px;
+      margin: 0;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--game-pink), var(--game-yellow));
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 900;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+    }
+
+    .training-info {
+      min-height: 58px;
+      padding: 12px 14px;
+      border: 1px solid rgba(79, 125, 255, 0.26);
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.94), rgba(239,248,255,0.9));
+      box-shadow: 0 14px 28px rgba(53, 86, 166, 0.16);
+      color: var(--game-navy);
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.55;
+      display: none;
+    }
+
+    .simulation-picker {
+      position: fixed;
+      inset: 0;
+      z-index: 19;
+      display: none;
+      overflow: auto;
+      padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+      color: #172033;
+      background:
+        linear-gradient(180deg, rgba(248, 252, 255, 0.96), rgba(255, 249, 232, 0.88)),
+        url('assets/title-idols/backgrounds/luna.png') center 34% / cover fixed,
+        linear-gradient(135deg, #f7fbff 0%, #ffffff 48%, #fff3d1 100%);
+    }
+
+    body.simulation-picker-active .simulation-picker {
+      display: grid;
+    }
+
+    .simulation-picker-shell {
+      width: min(1120px, 100%);
+      min-height: calc(100dvh - 36px);
+      margin: 0 auto;
+      display: grid;
+      grid-template-rows: auto minmax(300px, 1fr) auto;
+      gap: 18px;
+    }
+
+    .simulation-picker-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .simulation-picker-kicker {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--game-blue), var(--game-pink));
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 950;
+      box-shadow: 0 10px 22px rgba(53, 86, 166, 0.22);
+    }
+
+    .simulation-picker-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .simulation-picker-return {
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid rgba(79, 125, 255, 0.28);
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ffffff, #eef8ff);
+      color: var(--game-blue);
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(79, 125, 255, 0.16);
+      white-space: nowrap;
+    }
+
+    .simulation-picker-center {
+      display: grid;
+      place-items: center;
+      gap: 14px;
+      align-self: stretch;
+      text-align: center;
+    }
+
+    .simulation-crystal-frame {
+      position: relative;
+      width: min(540px, 82vw);
+      aspect-ratio: 1.45 / 1;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(79, 125, 255, 0.24);
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.88), rgba(247,252,255,0.76)),
+        linear-gradient(135deg, rgba(53,199,255,0.18), rgba(255,226,92,0.14));
+      box-shadow: 0 24px 54px rgba(36, 48, 79, 0.16);
+      overflow: hidden;
+    }
+
+    .simulation-crystal-frame::before {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border: 1px solid rgba(79, 125, 255, 0.12);
+      border-radius: 8px;
+      pointer-events: none;
+    }
+
+    .simulation-crystal-image {
+      position: relative;
+      z-index: 1;
+      width: min(92%, 520px);
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 18px 20px rgba(36, 48, 79, 0.16));
+    }
+
+    .simulation-picker-title {
+      display: grid;
+      gap: 8px;
+      max-width: 720px;
+    }
+
+    .simulation-picker-title h1 {
+      margin: 0;
+      color: var(--game-navy);
+      font-size: clamp(30px, 5.5vw, 58px);
+      line-height: 1;
+      letter-spacing: 0;
+      text-shadow: 3px 3px 0 rgba(255, 226, 92, 0.82), 6px 6px 0 rgba(53, 199, 255, 0.16);
+    }
+
+    .simulation-picker-title p {
+      margin: 0;
+      color: #435165;
+      font-size: 14px;
+      line-height: 1.65;
+      font-weight: 800;
+    }
+
+    .simulation-mode-dock {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .simulation-mode-card {
+      position: relative;
+      min-height: 136px;
+      display: grid;
+      align-content: space-between;
+      gap: 10px;
+      padding: 14px;
+      border: 1px solid rgba(79, 125, 255, 0.28);
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.94), rgba(244,250,255,0.88)),
+        linear-gradient(135deg, var(--mode-accent, rgba(53,199,255,0.22)), rgba(255,226,92,0.12));
+      color: #20293d;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 0 14px 30px rgba(36, 48, 79, 0.14);
+      overflow: hidden;
+    }
+
+    .simulation-mode-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 8px;
+      border-top: 3px solid var(--mode-line, #35c7ff);
+      pointer-events: none;
+    }
+
+    .simulation-mode-card:hover,
+    .simulation-mode-card:focus-visible {
+      transform: translateY(-3px);
+      outline: 3px solid rgba(53, 199, 255, 0.32);
+      outline-offset: 2px;
+      box-shadow: 0 18px 36px rgba(36, 48, 79, 0.18), 0 10px 22px rgba(255, 79, 179, 0.12);
+    }
+
+    .simulation-mode-label {
+      width: fit-content;
+      min-height: 26px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 9px;
+      border-radius: 999px;
+      background: var(--mode-line, #35c7ff);
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+    .simulation-mode-card strong {
+      display: block;
+      margin-top: 8px;
+      color: var(--game-navy);
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .simulation-mode-card p {
+      margin: 8px 0 0;
+      color: #4b5a70;
+      font-size: 13px;
+      line-height: 1.5;
+      font-weight: 750;
+    }
+
+    .simulation-mode-arrow {
+      justify-self: end;
+      min-width: 34px;
+      min-height: 34px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 999px;
+      background: #ffffff;
+      color: var(--mode-line, #35c7ff);
+      font-size: 18px;
+      font-weight: 950;
+      box-shadow: 0 8px 16px rgba(36, 48, 79, 0.12);
+    }
+
+    @keyframes chibi-pop {
+      0% { transform: translateY(0) rotate(0deg) scale(1); }
+      30% { transform: translateY(-18px) rotate(-5deg) scale(1.08); }
+      62% { transform: translateY(0) rotate(4deg) scale(1.02); }
+      100% { transform: translateY(-4px) rotate(0deg) scale(1.04); }
     }
 
     .stage {
@@ -617,6 +1272,59 @@
       overflow-wrap: anywhere;
     }
 
+    .simulation-kind-list {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .simulation-kind {
+      min-width: 0;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.74);
+    }
+
+    .simulation-kind.selected {
+      border-color: rgba(53, 199, 255, 0.72);
+      background: linear-gradient(180deg, #ffffff, #eef9ff);
+      box-shadow: 0 8px 18px rgba(35, 127, 145, 0.14);
+    }
+
+    .kind-label {
+      display: inline-flex;
+      align-items: center;
+      min-height: 20px;
+      padding: 0 7px;
+      border: 1px solid #cfe0dd;
+      border-radius: 999px;
+      background: #f5fbf8;
+      color: #285a4c;
+      font-size: 11px;
+      line-height: 1;
+    }
+
+    .simulation-kind strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .simulation-kind p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .scenario-group-title {
+      margin: 2px 0 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
     button.active {
       border-color: #2d6cdf;
       background: #edf4ff;
@@ -853,6 +1561,12 @@
       border-bottom: 0;
     }
 
+    .transport-table th:nth-child(2),
+    .transport-table td:nth-child(2) {
+      text-align: left;
+      font-variant-numeric: normal;
+    }
+
     .mechanism-grid {
       display: grid;
       gap: 9px;
@@ -965,13 +1679,13 @@
       }
 
       .splash-inner {
-        grid-template-columns: 1fr;
-        gap: 20px;
+        width: min(720px, calc(100% - 28px));
+        gap: 12px;
         text-align: center;
       }
 
       .guide-portrait {
-        width: min(620px, 100%);
+        width: 100%;
       }
 
       .start-button {
@@ -981,6 +1695,18 @@
       .stage {
         height: 58vh;
         min-height: 430px;
+      }
+
+      .training-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .simulation-picker-shell {
+        grid-template-rows: auto auto auto;
+      }
+
+      .simulation-mode-dock {
+        grid-template-columns: 1fr;
       }
 
       .sidebar {
@@ -1001,6 +1727,139 @@
     }
 
     @media (max-width: 620px) {
+      .splash-inner {
+        width: 100%;
+        padding: max(50dvh, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
+      }
+
+      .splash-copy {
+        gap: 9px;
+        padding: 9px 10px 10px;
+        max-height: calc(50dvh - max(10px, env(safe-area-inset-bottom)));
+        border-right: 0;
+        border-left: 0;
+        border-bottom: 0;
+        border-radius: 18px 18px 0 0;
+      }
+
+      .splash-copy h1 {
+        font-size: 22px;
+      }
+
+      .splash-message {
+        display: none;
+      }
+
+      .title-idol-label {
+        left: 10px;
+        max-width: calc(100% - 20px);
+        min-height: 30px;
+        font-size: 20px;
+      }
+
+      .idol-speech {
+        left: 10px;
+        top: calc(max(14px, env(safe-area-inset-top)) + 36px);
+        max-width: calc(100% - 22px);
+        padding: 7px 10px;
+        font-size: 13px;
+      }
+
+      .login-panel {
+        max-height: clamp(250px, 33dvh, 285px);
+        gap: 7px;
+        padding: 9px;
+      }
+
+      .login-panel h2 {
+        font-size: 14px;
+      }
+
+      .today-stamp,
+      .share-status {
+        font-size: 11px;
+      }
+
+      .calendar-weekdays,
+      .login-calendar {
+        gap: 2px;
+      }
+
+      .calendar-day {
+        border-radius: 6px;
+        font-size: 11px;
+        min-height: 24px;
+      }
+
+      .login-note {
+        min-height: 70px;
+      }
+
+      .start-button {
+        min-height: 50px;
+      }
+
+      .training-hub {
+        padding: 14px 10px max(14px, env(safe-area-inset-bottom));
+      }
+
+      .simulation-picker {
+        padding: 14px 10px max(14px, env(safe-area-inset-bottom));
+      }
+
+      .training-top {
+        display: grid;
+      }
+
+      .simulation-picker-top {
+        display: grid;
+        justify-items: start;
+      }
+
+      .simulation-picker-actions {
+        justify-content: start;
+      }
+
+      .simulation-crystal-frame {
+        width: min(100%, 430px);
+      }
+
+      .simulation-picker-title h1 {
+        font-size: 32px;
+      }
+
+      .training-top h1 {
+        font-size: 34px;
+      }
+
+      .training-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        padding: 10px;
+      }
+
+      .training-card {
+        min-height: 86px;
+        aspect-ratio: 1.75 / 1;
+      }
+
+      .training-card h2 {
+        min-height: 24px;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        padding: 0 8px;
+        font-size: 11px;
+      }
+
+      .menu-chibi-wrap {
+        min-height: 132px;
+      }
+
+      .menu-chibi {
+        width: 126px;
+      }
+
       .topbar {
         align-items: flex-start;
       }
@@ -1029,14 +1888,15 @@
     <div class="splash-inner">
       <div class="guide-portrait">
         <img id="titleIdolImage" class="title-idol-image" src="assets/title-idols/lesson-silver.png" alt="白瀬ルナがレッスンしているタイトルイラスト" />
-        <div class="title-idol-label"><span id="titleIdolType">白瀬ルナ｜銀髪清楚系</span></div>
+        <div class="title-idol-label"><span id="titleIdolType">白瀬ルナ</span></div>
+        <div id="idolSpeech" class="idol-speech">今日も一歩ずつ、いきましょう。</div>
+      </div>
+      <div id="loginPop" class="login-pop" aria-hidden="true">
+        <img src="assets/ui/login-pop.svg" alt="ログイン!" />
       </div>
       <div class="splash-copy">
-        <p class="splash-kicker">本日のレッスン案内アイドル</p>
-        <h1>NV中心 DFTモデル解析ビューア</h1>
-        <p class="splash-message">おつかれさま。スタートを押したら、ダイヤモンド中の欠陥再構成をいっしょに見ていきます。</p>
-        <button id="startViewerBtn" class="start-button" type="button">スタート</button>
-        <section class="login-panel" aria-label="login bonus calendar">
+        <button id="toggleCalendarDrawerBtn" class="calendar-drawer-toggle" type="button" aria-expanded="true" aria-controls="loginPanel">カレンダーをしまう</button>
+        <section id="loginPanel" class="login-panel" aria-label="login bonus calendar">
           <div class="login-panel-head">
             <h2>ログインボーナス</h2>
             <span id="todayStamp" class="today-stamp">今日のスタンプ</span>
@@ -1053,13 +1913,126 @@
           <label class="login-note-label" for="dailyNote">
             <span id="dailyNoteLabel">今日のレッスン日誌</span>
             <span class="diary-help">選んだ日の作業メモを書けます。スタンプと一緒に共有URLへ入ります。</span>
-            <textarea id="dailyNote" class="login-note" placeholder="例: 2D図でV1/V2を隣接配置に直した。13 eV線の位置を確認した。"></textarea>
+            <textarea id="dailyNote" class="login-note" placeholder="今日やったこと"></textarea>
           </label>
           <div class="login-actions">
             <button id="shareCalendarBtn" class="share-button" type="button">共有URLをコピー</button>
-            <span id="shareStatus" class="share-status">スタンプとメモはこのブラウザに保存されます。</span>
+            <span id="shareStatus" class="share-status"></span>
           </div>
+          <details class="data-guard">
+            <summary>データを消さない工夫</summary>
+            <div class="data-guard-body">
+              <p>このカレンダーと日誌はブラウザ内に保存されます。ブラウザの履歴削除、別端末、別ブラウザでは消えたり見えなくなることがあります。大事な記録は、共有URLかバックアップファイルを残してください。</p>
+              <ul>
+                <li>共有URLは、スタンプと日誌をURLの末尾に入れて相手へ渡す方法です。</li>
+                <li>バックアップ保存は、JSONファイルとして手元に残す方法です。</li>
+                <li>復元すると、今ある記録にバックアップ内の記録を足して読み込みます。</li>
+              </ul>
+              <div class="data-guard-actions">
+                <button id="downloadBackupBtn" type="button">バックアップ保存</button>
+                <button id="restoreBackupBtn" type="button">バックアップ復元</button>
+                <input id="restoreBackupInput" type="file" accept="application/json,.json" hidden />
+              </div>
+            </div>
+          </details>
         </section>
+        <button id="startViewerBtn" class="start-button" type="button">始める</button>
+      </div>
+    </div>
+  </section>
+  <section id="trainingHub" class="training-hub" aria-label="training menu">
+    <div class="training-shell">
+      <div class="training-top">
+        <div class="training-title-block">
+          <p class="training-kicker">SPECIAL TRAINING</p>
+          <h1>特訓メニュー!</h1>
+          <p class="training-lead">カードを1回押すとミニキャラが動いて説明します。もう一度同じカードを押すと、その特訓ページを開始します。</p>
+        </div>
+        <button id="trainingBackTitleBtn" class="training-return" type="button">タイトルへ</button>
+      </div>
+      <div class="training-grid">
+        <button class="training-card" style="--card-accent: rgba(255, 122, 184, 0.32); --menu-bg: url('assets/chibis/hinata-plan.png')" type="button" data-training="plan">
+          <span class="menu-chibi-wrap"><img class="menu-chibi" src="assets/chibis/hinata-plan.png" alt="小羽ひなたのミニキャラ" /></span>
+          <span>
+            <h2>研究計画</h2>
+            <small>NEW!</small>
+          </span>
+        </button>
+        <button class="training-card" style="--card-accent: rgba(95, 170, 255, 0.32); --menu-bg: url('assets/chibis/luna-sim.png')" type="button" data-training="simulation">
+          <span class="menu-chibi-wrap"><img class="menu-chibi" src="assets/chibis/luna-sim.png" alt="白瀬ルナのミニキャラ" /></span>
+          <span>
+            <h2>シミュレーション</h2>
+            <small>NEW!</small>
+          </span>
+        </button>
+        <button class="training-card" style="--card-accent: rgba(175, 121, 255, 0.30); --menu-bg: url('assets/chibis/reika-literature.png')" type="button" data-training="literature">
+          <span class="menu-chibi-wrap"><img class="menu-chibi" src="assets/chibis/reika-literature.png" alt="西園寺レイカのミニキャラ" /></span>
+          <span>
+            <h2>参考文献</h2>
+            <small>NEW!</small>
+          </span>
+        </button>
+        <button class="training-card" style="--card-accent: rgba(44, 126, 255, 0.28); --menu-bg: url('assets/chibis/mio-manual.png')" type="button" data-training="manual">
+          <span class="menu-chibi-wrap"><img class="menu-chibi" src="assets/chibis/mio-manual.png" alt="黒瀬ミオのミニキャラ" /></span>
+          <span>
+            <h2>装置操作マニュアル</h2>
+            <small>NEW!</small>
+          </span>
+        </button>
+        <button class="training-card" style="--card-accent: rgba(255, 151, 73, 0.32); --menu-bg: url('assets/chibis/rina-game.png')" type="button" data-training="minigame">
+          <span class="menu-chibi-wrap"><img class="menu-chibi" src="assets/chibis/rina-game.png" alt="海崎リナのミニキャラ" /></span>
+          <span>
+            <h2>ミニゲーム</h2>
+            <small>NEW!</small>
+          </span>
+        </button>
+      </div>
+      <div id="trainingInfo" class="training-info">気になるカードを押して、担当ミニキャラの説明を見てください。</div>
+    </div>
+  </section>
+  <section id="simulationPicker" class="simulation-picker" aria-label="simulation selector">
+    <div class="simulation-picker-shell">
+      <div class="simulation-picker-top">
+        <span class="simulation-picker-kicker">SIMULATION</span>
+        <div class="simulation-picker-actions">
+          <button id="simulationPickerMenuBtn" class="simulation-picker-return" type="button">メニューへ</button>
+          <button id="simulationPickerTitleBtn" class="simulation-picker-return" type="button">タイトルへ</button>
+        </div>
+      </div>
+      <div class="simulation-picker-center">
+        <div class="simulation-crystal-frame">
+          <img class="simulation-crystal-image" src="assets/ui/simulation-crystal-map.svg" alt="N_i + V1 + V2 欠陥複合体を示すダイヤモンド結晶図" />
+        </div>
+        <div class="simulation-picker-title">
+          <h1>シミュレーションを選択</h1>
+          <p>N_i + V1 + V2 複合体を起点に、結晶再構成、照射輸送、形成量モデルを切り替えます。</p>
+        </div>
+      </div>
+      <div class="simulation-mode-dock" aria-label="simulation modes">
+        <button class="simulation-mode-card" style="--mode-accent: rgba(53, 199, 255, 0.22); --mode-line: #35a6ff" type="button" data-simulation-mode="dft">
+          <span>
+            <span class="simulation-mode-label">DFT / NEB</span>
+            <strong>結晶再構成</strong>
+            <p>3D/2Dの欠陥複合体と、N_i -> N_s 再構成の経路を見る。</p>
+          </span>
+          <span class="simulation-mode-arrow" aria-hidden="true">›</span>
+        </button>
+        <button class="simulation-mode-card" style="--mode-accent: rgba(255, 226, 92, 0.24); --mode-line: #f2b600" type="button" data-simulation-mode="picmcc">
+          <span>
+            <span class="simulation-mode-label">PIC-MCC</span>
+            <strong>照射輸送</strong>
+            <p>電子量、照射V、試料バイアス、圧力から試料近傍の電子流束へつなぐ。</p>
+          </span>
+          <span class="simulation-mode-arrow" aria-hidden="true">›</span>
+        </button>
+        <button class="simulation-mode-card" style="--mode-accent: rgba(255, 122, 184, 0.20); --mode-line: #ff6aa8" type="button" data-simulation-mode="rate">
+          <span>
+            <span class="simulation-mode-label">Rate model</span>
+            <strong>形成量モデル</strong>
+            <p>照射輸送とDFT/NEB障壁を、NV形成量と飽和線量の式へ渡す。</p>
+          </span>
+          <span class="simulation-mode-arrow" aria-hidden="true">›</span>
+        </button>
       </div>
     </div>
   </section>
@@ -1094,8 +2067,26 @@
         <div class="side-return-row">
           <button id="backTitleSideBtn" class="side-action-button" type="button">タイトルへ戻る</button>
         </div>
-        <section>
-          <h2>モデル</h2>
+        <section id="simulationOverviewSection">
+          <h2>シミュレーション種類</h2>
+          <div class="simulation-kind-list" aria-label="simulation type overview">
+            <div class="simulation-kind" data-kind="dft">
+              <span class="kind-label">DFT / NEB</span>
+              <strong>欠陥複合体の再構成経路</strong>
+              <p>N_i + V1 + V2 や N_s - V 関連構造が、電荷状態や励起でどの配置へ移れるかを見る。</p>
+            </div>
+            <div class="simulation-kind" data-kind="picmcc">
+              <span class="kind-label">PIC-MCC</span>
+              <strong>照射電子・ガス衝突・試料バイアス</strong>
+              <p>電子量、照射V、試料バイアス、チャンバー圧力、ガス圧から ne、Phi、試料電子フラックス、Geh を見積もる。</p>
+            </div>
+            <div class="simulation-kind" data-kind="rate">
+              <span class="kind-label">Rate model</span>
+              <strong>実験量との接続</strong>
+              <p>輸送計算の励起密度とDFT/NEB障壁を、NV形成量や飽和線量の式へ渡す。</p>
+            </div>
+          </div>
+          <div class="scenario-group-title">DFT/NEBで見る欠陥再構成モデル</div>
           <div class="scenario-tabs">
             <button id="scenarioNi" type="button" data-scenario="ni_to_vc">
               N_i + V再結合
@@ -1183,7 +2174,7 @@
           <div id="interpretation" class="note"></div>
         </section>
 
-        <section>
+        <section id="formulaSummarySection">
           <h2>計算式まとめ</h2>
           <div class="mechanism-grid">
             <div class="mechanism-step">
@@ -1208,6 +2199,15 @@ lambda_vis = 3.2 A + 14.0 A * reach
 E(z) = Ee exp(-z/lambda_vis)
 z_13 = lambda_vis ln(Ee / 13 eV)
 amount = slider_amount / 45</code>
+            </div>
+            <div class="mechanism-step">
+              <strong>照射輸送/PIC-MCC前段</strong>
+              <p>重すぎない範囲で、中性ガスの熱運動を相対速度と衝突確率に入れ、試料近傍へ届く電子量を計算します。</p>
+              <code class="formula">ng = pg / (kB Tg)
+m dv/dt = q E,  E = -grad(phi)
+Pcoll = 1 - exp[-ng sigma(vrel) vrel dt]
+Gamma_e,sample = integral f_e(v) max(v dot n, 0) dv
+Geh = (Je/e) Se(E, pg) / epsilon_eh</code>
             </div>
             <div class="mechanism-step">
               <strong>NEB障壁の読み取り</strong>
@@ -1266,7 +2266,7 @@ Ea = max(Delta Ei)</code>
           <p>30 keV以下では直接ノックオンより、電子励起や電荷状態変化でNEB障壁が下がるかが中心論点になります。</p>
         </section>
 
-        <section>
+        <section id="rateModelSection">
           <h2>3段階モデル</h2>
           <div class="mechanism-grid">
             <div class="mechanism-step">
@@ -1308,6 +2308,26 @@ low-E surface model: Geh(z) = G0 exp(-z/lambda_e)</code>
           </div>
         </section>
 
+        <section id="transportParameterSection">
+          <h2>照射輸送パラメータ</h2>
+          <table class="mini-table transport-table" aria-label="transport parameter table">
+            <thead>
+              <tr><th>入力</th><th>モデルでの使い方</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>試料バイアス Vs</td><td>シース境界条件として試料面の Gamma_e,sample と Phi を変える</td></tr>
+              <tr><td>電子照射V Vacc</td><td>初期電子エネルギー、停止能 Se、電離/励起断面積を変える</td></tr>
+              <tr><td>電子量 Ie</td><td>Je/e と Geh のスケールを決め、励起密度を増減させる</td></tr>
+              <tr><td>ガス圧 pg</td><td>ng、平均自由行程、MCC衝突頻度を決める</td></tr>
+              <tr><td>チャンバー圧力 pch</td><td>残留ガス衝突と壁面損失の背景条件に入れる</td></tr>
+              <tr><td>ガス温度 Tg</td><td>中性粒子のMaxwell速度と ng = pg/kBTg に入れる</td></tr>
+            </tbody>
+          </table>
+          <div class="note concept mechanism-note">
+            この前段は、空孔単体がNを直接動かす機構としては扱いません。出力した ne、Phi、Gamma_e,sample、Geh を、N_i + V1 + V2 複合体全体の励起、電荷/結合状態変化、PES変化、N_i -> N_s 再構成の速度式へ渡します。
+          </div>
+        </section>
+
         <section>
           <h2>補助項</h2>
           <table class="mini-table" aria-label="mechanism terms table">
@@ -1334,12 +2354,7 @@ low-E surface model: Geh(z) = G0 exp(-z/lambda_e)</code>
   </main>
 
   <script type="module">
-    let THREE;
-    try {
-      THREE = await import('../assets/vendor/three.module.js');
-    } catch (error) {
-      THREE = await import('https://unpkg.com/three@0.160.0/build/three.module.js');
-    }
+    const THREE = await import('https://unpkg.com/three@0.160.0/build/three.module.js');
 
     const SCENARIOS = {
       ni_to_vc: {
@@ -2511,7 +3526,7 @@ low-E surface model: Geh(z) = G0 exp(-z/lambda_e)</code>
     function flat2dInterpretationLines() {
       return [
         '完全2Dモードは説明用の模式図です。灰色の粒子はC格子サイト、赤い輪は空孔、青い粒子は窒素、黄色の領域は局所電子励起を示しています。',
-        'Vが電子を捕まえてNを静電的に引き寄せる、という表示ではありません。',
+        '表示は空孔単体の静電引力ではなく、欠陥複合体全体の励起と再構成を表しています。',
         'N_i + V1 + V2 の欠陥複合体全体が励起され、電子・正孔捕獲で電荷状態と結合状態が変わり、原子配置のエネルギー地形が変わる、という仮説を絵にしています。',
         'その結果、格子間窒素N_iが空いている炭素格子サイトV1へ再結合して置換型窒素N_sになり、隣に残ったV2とのペアがNV centerになります。',
       ];
@@ -2916,48 +3931,211 @@ low-E surface model: Geh(z) = G0 exp(-z/lambda_e)</code>
 
     const TITLE_IDOLS = [
       {
+        name: '白瀬ルナ',
         label: '白瀬ルナ｜銀髪清楚系',
-        src: 'assets/title-idols/lesson-silver.png',
+        src: 'assets/title-idols/backgrounds/luna.png',
+        position: 'center center',
+        lines: [
+          '今日も静かに、でも確実に進めましょう。',
+          '一つずつ確認すれば、研究はちゃんと形になります。',
+          '焦らず記録。そこがいちばん強いです。',
+        ],
       },
       {
+        name: '小羽ひなた',
         label: '小羽ひなた｜元気妹系',
-        src: 'assets/title-idols/lesson-energetic.png',
+        src: 'assets/title-idols/backgrounds/hinata.png',
+        position: 'center center',
+        lines: [
+          '今日のスタンプ、ぽんっと押しちゃおう！',
+          'ちょっとだけでも進めたら勝ちだよ！',
+          '研究メモ、あとで自分を助けてくれるよ！',
+        ],
       },
       {
+        name: '西園寺レイカ',
         label: '西園寺レイカ｜お嬢様系',
-        src: 'assets/title-idols/lesson-lady.png',
+        src: 'assets/title-idols/backgrounds/reika.png',
+        position: '38% center',
+        lines: [
+          'よろしいですわ。今日の成果を美しく残しましょう。',
+          '文献も計算も、筋道が見えれば怖くありませんわ。',
+          'まずはログインの一歩から、ですわね。',
+        ],
+      },
+      {
+        name: '黒瀬ミオ',
+        label: '黒瀬ミオ｜クール努力家',
+        src: 'assets/title-idols/backgrounds/mio.png',
+        position: 'center center',
+        lines: [
+          '今日の条件、ちゃんと残しておこう。',
+          '大丈夫。地味な記録ほど、あとで効く。',
+          '装置も計算も、確認してから進めよう。',
+        ],
+      },
+      {
+        name: '海崎リナ',
+        label: '海崎リナ｜ギャル系',
+        src: 'assets/title-idols/backgrounds/rina.png',
+        position: 'center center',
+        lines: [
+          '今日も研究、いい感じに盛ってこ！',
+          'スタンプ押したら、もう一歩進んだってこと！',
+          'わかんない所はメモっとけば未来の自分が助かるっしょ！',
+        ],
       },
     ];
+
+    const TRAINING_OPTIONS = {
+      plan: {
+        message: '研究計画 READY',
+        url: 'pages/research-plan.html',
+      },
+      simulation: {
+        message: 'シミュレーション READY',
+        action: 'simulation',
+      },
+      literature: {
+        message: '参考文献 READY',
+        url: 'pages/references.html',
+      },
+      manual: {
+        message: '装置操作 READY',
+        url: 'pages/manual.html',
+      },
+      minigame: {
+        message: 'ミニゲーム READY',
+        url: 'pages/minigames.html',
+      },
+    };
+
+    let primedTraining = '';
+    const CALENDAR_DRAWER_KEY = 'nvDftCalendarDrawer.collapsed';
 
     function chooseTitleIdol() {
       const idol = TITLE_IDOLS[Math.floor(Math.random() * TITLE_IDOLS.length)];
       const image = document.getElementById('titleIdolImage');
       const label = document.getElementById('titleIdolType');
+      const speech = document.getElementById('idolSpeech');
       if (image) {
         image.src = idol.src;
         image.alt = `${idol.label}の女性アイドルがレッスンしているタイトルイラスト`;
+        image.style.objectPosition = idol.position || 'center center';
       }
-      if (label) label.textContent = idol.label;
+      if (label) label.textContent = idol.name || idol.label.split('｜')[0];
+      if (speech) {
+        const lines = idol.lines || ['今日も記録から始めましょう。'];
+        speech.textContent = lines[Math.floor(Math.random() * lines.length)];
+      }
     }
 
-    function startViewer() {
+    function focusSimulationMode(mode = 'dft') {
+      const sectionByMode = {
+        dft: 'simulationOverviewSection',
+        picmcc: 'transportParameterSection',
+        rate: 'rateModelSection',
+      };
+      document.querySelectorAll('.simulation-kind').forEach(card => {
+        card.classList.toggle('selected', card.dataset.kind === mode);
+      });
+      const target = document.getElementById(sectionByMode[mode] || sectionByMode.dft);
+      const sidebar = document.querySelector('.sidebar');
+      if (!target || !sidebar) return;
+      const sideInner = document.querySelector('.side-inner');
+      const baseOffset = sideInner ? sideInner.offsetTop : 0;
+      sidebar.scrollTo({
+        top: mode === 'dft' ? 0 : Math.max(0, target.offsetTop - baseOffset - 10),
+        behavior: 'smooth',
+      });
+    }
+
+    function startViewer(mode = 'dft') {
       document.body.classList.remove('title-active');
+      document.body.classList.remove('training-active');
+      document.body.classList.remove('simulation-picker-active');
       document.body.classList.add('viewer-started');
       resize();
-      canvas.focus();
+      requestAnimationFrame(() => {
+        resize();
+        focusSimulationMode(mode);
+        canvas.focus();
+      });
+    }
+
+    function showTrainingHub() {
+      document.body.classList.remove('title-active');
+      document.body.classList.remove('viewer-started');
+      document.body.classList.remove('simulation-picker-active');
+      document.body.classList.add('training-active');
+      primedTraining = '';
+      document.querySelectorAll('.training-card').forEach(card => card.classList.remove('primed'));
+      document.getElementById('trainingInfo').textContent = 'SELECT MENU';
+    }
+
+    function showSimulationPicker() {
+      document.body.classList.remove('title-active');
+      document.body.classList.remove('training-active');
+      document.body.classList.remove('viewer-started');
+      document.body.classList.add('simulation-picker-active');
+      primedTraining = '';
+      document.querySelectorAll('.training-card').forEach(card => card.classList.remove('primed'));
+      const picker = document.getElementById('simulationPicker');
+      if (picker) picker.scrollTop = 0;
     }
 
     function showTitleScreen() {
       chooseTitleIdol();
       document.body.classList.add('title-active');
+      document.body.classList.remove('training-active');
       document.body.classList.remove('viewer-started');
+      document.body.classList.remove('simulation-picker-active');
       const splash = document.getElementById('splash');
       if (splash) splash.scrollTop = 0;
       renderLoginCalendar();
     }
 
+    function setCalendarDrawerCollapsed(collapsed) {
+      const copy = document.querySelector('.splash-copy');
+      const button = document.getElementById('toggleCalendarDrawerBtn');
+      if (!copy || !button) return;
+      copy.classList.toggle('calendar-collapsed', collapsed);
+      button.textContent = collapsed ? 'カレンダーを引き出す' : 'カレンダーをしまう';
+      button.setAttribute('aria-expanded', String(!collapsed));
+      try {
+        localStorage.setItem(CALENDAR_DRAWER_KEY, collapsed ? 'true' : 'false');
+      } catch {
+        // localStorageが使えない環境でも、開閉だけはその場で動かす。
+      }
+    }
+
+    function initCalendarDrawer() {
+      let collapsed = false;
+      try {
+        collapsed = localStorage.getItem(CALENDAR_DRAWER_KEY) === 'true';
+      } catch {
+        collapsed = false;
+      }
+      setCalendarDrawerCollapsed(collapsed);
+      document.getElementById('toggleCalendarDrawerBtn').addEventListener('click', () => {
+        const copy = document.querySelector('.splash-copy');
+        setCalendarDrawerCollapsed(!copy.classList.contains('calendar-collapsed'));
+      });
+    }
+
+    function handleTrainingChoice(key) {
+      const option = TRAINING_OPTIONS[key];
+      if (!option) return;
+      if (option.action === 'simulation') {
+        showSimulationPicker();
+      } else {
+        window.location.href = option.url;
+      }
+    }
+
     const LOGIN_STORE_KEY = 'nvDftLoginCalendar.v1';
     const LOGIN_HASH_PREFIX = 'login=';
+    const LOGIN_POP_STORE_KEY = 'nvDftLoginPop.lastShownDate';
     let loginData = { entries: {} };
     let selectedLoginDate = '';
     let calendarMonth = { year: 2026, month: 6 };
@@ -3027,6 +4205,44 @@ low-E surface model: Geh(z) = G0 exp(-z/lambda_e)</code>
       localStorage.setItem(LOGIN_STORE_KEY, JSON.stringify(loginData));
     }
 
+    function downloadLoginBackup() {
+      const payload = {
+        app: 'nv-dft-viewer-login-calendar',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        entries: loginData.entries || {},
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const today = japanDateParts();
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `nv-dft-calendar-${dateKey(today.year, today.month, today.day)}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+      document.getElementById('shareStatus').textContent = 'バックアップJSONを保存しました。';
+    }
+
+    function restoreLoginBackupFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        try {
+          const parsed = JSON.parse(String(reader.result || '{}'));
+          const entries = parsed.entries || {};
+          loginData.entries = { ...loginData.entries, ...entries };
+          saveLoginData();
+          setSelectedLoginDate(selectedLoginDate || Object.keys(loginData.entries)[0] || '');
+          document.getElementById('shareStatus').textContent = 'バックアップを読み込みました。';
+        } catch {
+          document.getElementById('shareStatus').textContent = 'バックアップの読み込みに失敗しました。';
+        }
+      });
+      reader.readAsText(file, 'utf-8');
+    }
+
     function stampToday() {
       const today = japanDateParts();
       const key = dateKey(today.year, today.month, today.day);
@@ -3036,6 +4252,66 @@ low-E surface model: Geh(z) = G0 exp(-z/lambda_e)</code>
       calendarMonth = { year: today.year, month: today.month };
       document.getElementById('todayStamp').textContent = `${key} 済`;
       saveLoginData();
+      return key;
+    }
+
+    function focusTodayStamp() {
+      const stamp = document.getElementById('todayStamp');
+      const panel = document.getElementById('loginPanel');
+      if (panel) panel.scrollTop = 0;
+      if (!stamp) return;
+      stamp.classList.remove('stamp-focus');
+      void stamp.offsetWidth;
+      stamp.classList.add('stamp-focus');
+      window.setTimeout(() => stamp.classList.remove('stamp-focus'), 1400);
+    }
+
+    function showDailyLoginPop(todayKey) {
+      const pop = document.getElementById('loginPop');
+      const stamp = document.getElementById('todayStamp');
+      if (!pop || !stamp || !todayKey) return;
+
+      let alreadyShown = false;
+      try {
+        alreadyShown = localStorage.getItem(LOGIN_POP_STORE_KEY) === todayKey;
+      } catch {
+        alreadyShown = false;
+      }
+      if (alreadyShown) return;
+
+      setCalendarDrawerCollapsed(false);
+      window.setTimeout(() => {
+        const stampRect = stamp.getBoundingClientRect();
+        const startX = window.innerWidth / 2;
+        const startY = window.innerHeight / 2;
+        const targetX = stampRect.left + stampRect.width / 2;
+        const targetY = stampRect.top + stampRect.height / 2;
+        const dx = targetX - startX;
+        const dy = targetY - startY;
+
+        pop.classList.add('show');
+        const animation = pop.animate([
+          { opacity: 0, transform: 'translate(-50%, -50%) scale(0.38)' },
+          { opacity: 1, transform: 'translate(-50%, -50%) scale(1.18)', offset: 0.24 },
+          { opacity: 1, transform: 'translate(-50%, -50%) scale(0.96)', offset: 0.44 },
+          { opacity: 1, transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.26)`, offset: 0.78 },
+          { opacity: 0, transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.16)` },
+        ], {
+          duration: 1550,
+          easing: 'cubic-bezier(.16,.84,.28,1)',
+          fill: 'forwards',
+        });
+
+        animation.addEventListener('finish', () => {
+          pop.classList.remove('show');
+          focusTodayStamp();
+          try {
+            localStorage.setItem(LOGIN_POP_STORE_KEY, todayKey);
+          } catch {
+            // 保存できない場合でも演出自体は完了させる。
+          }
+        }, { once: true });
+      }, 260);
     }
 
     function shiftCalendarMonth(delta) {
@@ -3103,21 +4379,35 @@ low-E surface model: Geh(z) = G0 exp(-z/lambda_e)</code>
 
     function initLoginCalendar() {
       loadLoginData();
-      stampToday();
+      const todayKey = stampToday();
       setSelectedLoginDate(selectedLoginDate);
+      showDailyLoginPop(todayKey);
       document.getElementById('prevMonthBtn').addEventListener('click', () => shiftCalendarMonth(-1));
       document.getElementById('nextMonthBtn').addEventListener('click', () => shiftCalendarMonth(1));
       document.getElementById('dailyNote').addEventListener('input', event => updateSelectedLoginNote(event.target.value));
       document.getElementById('shareCalendarBtn').addEventListener('click', copyLoginShareUrl);
+      document.getElementById('downloadBackupBtn').addEventListener('click', downloadLoginBackup);
+      document.getElementById('restoreBackupBtn').addEventListener('click', () => document.getElementById('restoreBackupInput').click());
+      document.getElementById('restoreBackupInput').addEventListener('change', event => restoreLoginBackupFile(event.target.files?.[0]));
     }
 
     window.addEventListener('resize', resize);
-    document.getElementById('startViewerBtn').addEventListener('click', startViewer);
+    document.getElementById('startViewerBtn').addEventListener('click', showTrainingHub);
     document.getElementById('backTitleBtn').addEventListener('click', showTitleScreen);
     document.getElementById('backTitleSideBtn').addEventListener('click', showTitleScreen);
+    document.getElementById('trainingBackTitleBtn').addEventListener('click', showTitleScreen);
+    document.getElementById('simulationPickerMenuBtn').addEventListener('click', showTrainingHub);
+    document.getElementById('simulationPickerTitleBtn').addEventListener('click', showTitleScreen);
+    document.querySelectorAll('.training-card').forEach(card => {
+      card.addEventListener('click', () => handleTrainingChoice(card.dataset.training));
+    });
+    document.querySelectorAll('.simulation-mode-card').forEach(card => {
+      card.addEventListener('click', () => startViewer(card.dataset.simulationMode || 'dft'));
+    });
     updateBeamUI();
     updateDepthTable();
     chooseTitleIdol();
+    initCalendarDrawer();
     initLoginCalendar();
     resize();
     animate();

@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>参考文献 | NV center training</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23ffe066'/%3E%3Ccircle cx='12' cy='16' r='5' fill='%232d6cdf'/%3E%3Ccircle cx='21' cy='16' r='5' fill='none' stroke='%23202124' stroke-width='3'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #163044;
+      --muted: #517082;
+      --water-0: #e8fbff;
+      --water-1: #c8f1ff;
+      --water-2: #8fdcff;
+      --water-3: #4fb6ea;
+      --navy: #183858;
+      --blue: #2d8cff;
+      --cyan: #58d8ff;
+      --mint: #8ff6d2;
+      --yellow: #ffe779;
+      --pink: #ff79be;
+      --violet: #8b7cff;
+      --line: rgba(45, 140, 255, 0.22);
+      --glass: rgba(255, 255, 255, 0.72);
+      --shadow: 0 20px 50px rgba(25, 101, 154, 0.18), 0 8px 18px rgba(45, 140, 255, 0.12);
+      font-family: "Segoe UI", "Yu Gothic UI", "Hiragino Sans", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      color: var(--ink);
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 12% 88%, rgba(255,255,255,0.72) 0 12px, transparent 13px),
+        radial-gradient(circle at 34% 72%, rgba(255,255,255,0.58) 0 7px, transparent 8px),
+        radial-gradient(circle at 78% 82%, rgba(255,255,255,0.56) 0 15px, transparent 16px),
+        radial-gradient(circle at 88% 22%, rgba(255,255,255,0.62) 0 9px, transparent 10px),
+        radial-gradient(circle at 18% 18%, rgba(255,255,255,0.5) 0 18px, transparent 19px),
+        linear-gradient(180deg, #f8feff 0%, var(--water-0) 24%, var(--water-1) 58%, #f9feff 100%);
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 8% 94%, rgba(255,255,255,0.52) 0 5px, transparent 6px),
+        radial-gradient(circle at 24% 96%, rgba(255,255,255,0.48) 0 11px, transparent 12px),
+        radial-gradient(circle at 44% 92%, rgba(255,255,255,0.38) 0 8px, transparent 9px),
+        radial-gradient(circle at 62% 98%, rgba(255,255,255,0.5) 0 13px, transparent 14px),
+        radial-gradient(circle at 82% 94%, rgba(255,255,255,0.46) 0 7px, transparent 8px);
+      opacity: 0.9;
+      animation: bubbles-up 14s linear infinite;
+    }
+
+    body::after {
+      opacity: 0.45;
+      transform: translateY(40px) scale(1.12);
+      animation-duration: 20s;
+      animation-delay: -8s;
+    }
+
+    @keyframes bubbles-up {
+      from { background-position: 0 0; }
+      to { background-position: 0 -760px; }
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      width: min(1240px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 22px 0 42px;
+      display: grid;
+      gap: 16px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .kicker {
+      width: fit-content;
+      margin: 0 0 8px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--blue), var(--violet));
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+      box-shadow: 0 8px 18px rgba(45, 140, 255, 0.24);
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--navy);
+      font-size: clamp(32px, 7vw, 64px);
+      line-height: 0.96;
+      letter-spacing: 0;
+      text-shadow: 3px 3px 0 rgba(255, 231, 121, 0.95), 6px 6px 0 rgba(88, 216, 255, 0.2);
+    }
+
+    .top-link {
+      min-height: 40px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(45, 140, 255, 0.28);
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ffffff, #eefbff);
+      color: var(--blue);
+      font-weight: 900;
+      text-decoration: none;
+      box-shadow: 0 8px 18px rgba(45, 140, 255, 0.16);
+      white-space: nowrap;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(430px, 0.98fr) minmax(0, 1.02fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0.58)),
+        radial-gradient(circle at 12% 0%, rgba(88,216,255,0.28), transparent 32%);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .tree-panel {
+      position: sticky;
+      top: 14px;
+      min-height: 720px;
+      padding: 16px;
+      overflow: hidden;
+    }
+
+    .tree-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 16% 90%, rgba(255,255,255,0.7) 0 7px, transparent 8px),
+        radial-gradient(circle at 60% 82%, rgba(255,255,255,0.42) 0 10px, transparent 11px),
+        radial-gradient(circle at 84% 20%, rgba(255,255,255,0.46) 0 12px, transparent 13px);
+      pointer-events: none;
+    }
+
+    .tree-canvas {
+      position: relative;
+      z-index: 1;
+      min-height: 676px;
+    }
+
+    .branch-line {
+      position: absolute;
+      height: 2px;
+      background: rgba(24, 56, 88, 0.34);
+      transform-origin: left center;
+      pointer-events: none;
+    }
+
+    .branch-line::after {
+      content: "";
+      position: absolute;
+      right: -3px;
+      top: -3px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(45, 140, 255, 0.48);
+    }
+
+    .tree-node {
+      position: absolute;
+      min-width: 110px;
+      min-height: 42px;
+      padding: 8px 11px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(45, 140, 255, 0.34);
+      border-radius: 999px;
+      background:
+        radial-gradient(circle at 32% 22%, rgba(255,255,255,0.95), rgba(255,255,255,0.28) 34%, transparent 35%),
+        linear-gradient(135deg, rgba(226,249,255,0.92), rgba(242,238,255,0.76));
+      color: #12305c;
+      font-size: 13px;
+      font-weight: 950;
+      text-align: center;
+      line-height: 1.2;
+      box-shadow: inset 0 0 24px rgba(255,255,255,0.76), 0 14px 24px rgba(36, 130, 190, 0.16);
+      cursor: pointer;
+      user-select: none;
+      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+    }
+
+    .tree-node:hover {
+      transform: translateY(-2px);
+    }
+
+    .tree-node.active {
+      border-color: rgba(255, 79, 179, 0.74);
+      background:
+        radial-gradient(circle at 32% 22%, rgba(255,255,255,0.95), rgba(255,255,255,0.28) 34%, transparent 35%),
+        linear-gradient(135deg, rgba(255, 231, 121, 0.96), rgba(255, 121, 190, 0.28));
+      box-shadow: 0 16px 28px rgba(255, 79, 179, 0.16), inset 0 0 24px rgba(255,255,255,0.72);
+    }
+
+    .tree-node.root {
+      min-width: 145px;
+      min-height: 60px;
+      font-size: 18px;
+      color: #fff;
+      background:
+        radial-gradient(circle at 30% 22%, rgba(255,255,255,0.92), rgba(255,255,255,0.18) 28%, transparent 29%),
+        linear-gradient(135deg, var(--blue), var(--violet));
+      box-shadow: 0 18px 36px rgba(45, 140, 255, 0.26);
+    }
+
+    .tree-node.major {
+      min-width: 132px;
+      min-height: 52px;
+      font-size: 15px;
+    }
+
+    .tree-node small {
+      display: block;
+      margin-top: 2px;
+      color: inherit;
+      opacity: 0.72;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .right-panel {
+      padding: 14px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      color: var(--navy);
+      font-size: clamp(25px, 4vw, 38px);
+      line-height: 1.04;
+    }
+
+    .count-pill {
+      min-height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 10px;
+      border: 1px solid rgba(45, 140, 255, 0.24);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.72);
+      color: var(--navy);
+      font-size: 12px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .screenshot-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .shot {
+      min-height: 192px;
+      position: relative;
+      padding: 10px;
+      border: 1px solid rgba(45, 140, 255, 0.26);
+      border-radius: 10px;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244,252,255,0.94));
+      box-shadow: 0 12px 24px rgba(24, 56, 88, 0.12);
+    }
+
+    .shot::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 28px;
+      background: linear-gradient(90deg, rgba(45,140,255,0.16), rgba(88,216,255,0.12));
+      border-bottom: 1px solid rgba(45, 140, 255, 0.14);
+      pointer-events: none;
+    }
+
+    .shot-label {
+      position: relative;
+      z-index: 1;
+      min-height: 20px;
+      margin: 0 0 8px;
+      color: var(--navy);
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+    .shot svg {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 138px;
+      display: block;
+    }
+
+    .papers {
+      display: grid;
+      gap: 8px;
+      max-height: 330px;
+      overflow: auto;
+      padding-right: 3px;
+    }
+
+    .paper-card {
+      display: grid;
+      grid-template-columns: 34px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 62px;
+      padding: 9px;
+      border: 1px solid rgba(45, 140, 255, 0.18);
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(246,252,255,0.88));
+    }
+
+    .paper-number {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(45, 140, 255, 0.3);
+      border-radius: 50%;
+      background: #fff;
+      color: var(--navy);
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+    .paper-main strong {
+      display: block;
+      color: var(--navy);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .paper-main span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+      line-height: 1.35;
+    }
+
+    .rank {
+      min-height: 28px;
+      min-width: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: #eef7ff;
+      color: var(--navy);
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+    .rank.s { background: linear-gradient(135deg, #ffe779, #ffb347); }
+    .rank.a { background: linear-gradient(135deg, #d8f7ff, #cde2ff); }
+    .rank.b { background: linear-gradient(135deg, #f1e9ff, #fff0fb); }
+    .rank.todo { background: #f1f3f4; color: #667080; }
+
+    .abstract-strip {
+      padding: 12px;
+      border: 1px solid rgba(45, 140, 255, 0.18);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.64);
+      color: #24465c;
+      font-size: 13px;
+      font-weight: 750;
+      line-height: 1.65;
+    }
+
+    @media (max-width: 980px) {
+      header,
+      .layout {
+        grid-template-columns: 1fr;
+        flex-direction: column;
+      }
+
+      .tree-panel {
+        position: relative;
+        top: auto;
+        min-height: 620px;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .shell {
+        width: min(100% - 20px, 1240px);
+        padding-top: 14px;
+      }
+
+      .top-link {
+        min-height: 34px;
+        padding: 0 10px;
+        font-size: 12px;
+      }
+
+      .tree-panel {
+        overflow-x: auto;
+      }
+
+      .tree-canvas {
+        width: 600px;
+      }
+
+      .screenshot-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div>
+        <p class="kicker">LITERATURE TRAINING</p>
+        <h1>参考文献</h1>
+      </div>
+      <a class="top-link" href="../index.html">タイトルへ</a>
+    </header>
+
+    <section class="layout">
+      <aside class="panel tree-panel" aria-label="NV center literature tree">
+        <div id="treeCanvas" class="tree-canvas"></div>
+      </aside>
+
+      <article class="panel right-panel" aria-live="polite">
+        <div class="section-head">
+          <h2 id="categoryTitle">NVセンター</h2>
+          <span id="paperCount" class="count-pill">0件</span>
+        </div>
+        <div id="screenshotGrid" class="screenshot-grid"></div>
+        <div id="paperList" class="papers"></div>
+        <div id="categoryMemo" class="abstract-strip"></div>
+      </article>
+    </section>
+  </div>
+
+  <script>
+    const references = [
+      { id: 1, path: '形成 / 窒素注入', branch: '窒素注入', topic: '同位体N注入', author: 'Rabeau et al.', method: '7 keV 15N注入', finding: '注入N由来NVの確認', rank: 'S' },
+      { id: 2, path: '形成 / 窒素注入', branch: '窒素注入', topic: '生成効率', author: 'Pezzagna et al.', method: 'Nイオン注入', finding: 'エネルギー依存・収率', rank: 'S' },
+      { id: 3, path: '形成 / 窒素注入', branch: '窒素注入', topic: '浅い注入収率', author: 'Antonov et al.', method: '<10 keV N注入', finding: '低収率・チャネリング', rank: 'S' },
+      { id: 4, path: '形成 / 窒素注入', branch: '窒素注入', topic: '深さ分布', author: 'Santori et al.', method: 'N注入＋アニール＋エッチング', finding: 'NV深さ分布', rank: 'S' },
+      { id: 5, path: '形成 / 窒素注入', branch: '窒素注入', topic: 'スクリーン層', author: 'Ito et al.', method: '10 keV N+＋SiO2層', finding: '超浅部化・線量制御', rank: 'S' },
+      { id: 6, path: '形成 / 窒素注入', branch: '窒素注入', topic: '広ビーム注入', author: 'Speranza et al.', method: 'broad-beam ion implantation', finding: '浅いNV形成', rank: 'A' },
+      { id: 7, path: 'ダイヤモンド / 窒素', branch: '窒素', topic: 'Type Ib基板', author: 'Healey et al.', method: 'Type Ib HPHT＋注入', finding: '高N基板・浅いNV層', rank: 'S' },
+      { id: 8, path: '形成 / 窒素注入', branch: '窒素注入', topic: '高温注入', author: 'Ngambou et al.', method: '30-40 keV N2+、800°C', finding: '高密度・損傷抑制', rank: 'S' },
+      { id: 9, path: '形成 / 窒素注入', branch: '窒素注入', topic: '決定論的単一イオン', author: 'Groot-Berning et al.', method: '5.9 keV 15N2+', finding: '単一イオン制御', rank: 'A' },
+      { id: 10, path: 'ダイヤモンド / 生成方法', branch: '生成方法', topic: 'マスクN注入', author: 'Toyli et al.', method: 'N注入＋EBL開口', finding: '単一NV配列', rank: 'A' },
+      { id: 11, path: 'ダイヤモンド / 生成方法', branch: '生成方法', topic: '近接NV配列', author: 'Scarabelli et al.', method: 'Auナノ開口＋N注入', finding: '10 nm級配置', rank: 'A' },
+      { id: 12, path: 'ダイヤモンド / 生成方法', branch: '生成方法', topic: 'CN-', author: 'Spinicelli et al.', method: 'CN-＋ナノ開口', finding: '配列NV・収率向上', rank: 'A' },
+      { id: 13, path: 'ダイヤモンド / 生成方法', branch: '生成方法', topic: 'N2+', author: 'Yamamoto et al.', method: '20 keV 15N2+', finding: '結合NVペア', rank: 'A' },
+      { id: 14, path: 'ダイヤモンド / 生成方法', branch: '生成方法', topic: 'C5N4Hn', author: 'Haruyama et al.', method: 'C5N4Hn注入', finding: '三重NV・近接配置', rank: 'A' },
+      { id: 15, path: 'ダイヤモンド / 生成方法', branch: '生成方法', topic: 'N2+＋C', author: 'Naydenov et al.', method: 'N2+後C注入', finding: 'NV生成効率向上', rank: 'S' },
+      { id: 16, path: 'ダイヤモンド / 生成方法', branch: '生成方法', topic: 'H/He/C補助', author: 'Schwartz et al.', method: '7.7 keV N＋H/He/C', finding: '動的アニール', rank: 'S' },
+      { id: 17, path: '形成 / 空孔生成', branch: '空孔生成', topic: '集束He', author: 'Huang et al.', method: 'He+ FIB/HIM', finding: '位置制御・浅いNV', rank: 'S' },
+      { id: 18, path: '形成 / 空孔生成', branch: '空孔生成', topic: 'He＋ハードマスク', author: 'Trofimov et al.', method: 'He注入＋マスク', finding: '単一NV位置制御', rank: 'A' },
+      { id: 19, path: '応用 / バルクダイヤモンド', branch: 'バルクダイヤモンド', topic: 'He高密度層', author: 'Kleinsasser et al.', method: 'He+＋Nドープ12C', finding: '100 nm NVセンサー層', rank: 'S' },
+      { id: 20, path: '形成 / 空孔生成', branch: '空孔生成', topic: 'He δプロファイル', author: 'Favaro de Oliveira et al.', method: 'He照射＋深さプロファイル', finding: '表面δ層', rank: 'S' },
+      { id: 21, path: '形成 / 空孔生成', branch: '空孔生成', topic: 'He線量最適化', author: 'Berzins et al.', method: 'He+線量＋アニール', finding: '高感度NV層', rank: 'S' },
+      { id: 22, path: '応用 / ナノダイヤモンド', branch: 'ナノダイヤモンド', topic: 'ナノダイヤHe照射', author: 'Kumar et al.', method: '20-50 keV He+', finding: '蛍光ナノダイヤ', rank: 'B' },
+      { id: 23, path: '応用 / バルクダイヤモンド', branch: 'バルクダイヤモンド', topic: 'C照射比較', author: 'Healey et al.', method: '低エネ照射HPHT', finding: 'NV層作製法比較', rank: 'S' },
+      { id: 24, path: '形成 / 空孔生成', branch: '空孔生成', topic: 'Cイオン浅部NV', author: 'He Jian et al.', method: 'Cイオン注入', finding: '浅いNV生成', rank: 'S' },
+      { id: 25, path: '形成 / 空孔生成', branch: '空孔生成', topic: 'プロトン照射', author: 'Apra et al.', method: 'H+照射', finding: 'NV量制御', rank: 'A' },
+      { id: 26, path: '形成 / 低エネルギー照射', branch: '低エネルギー照射', topic: 'SEM電子線', author: 'Schwartz et al.', method: '2-30 keV電子線', finding: '非熱的NV形成', rank: 'S' },
+      { id: 27, path: 'ダイヤモンド / 生成方法', branch: '生成方法', topic: 'PIII', author: 'Alghannam & Hemmer', method: 'プラズマ浸漬イオン注入', finding: '数nm浅部NV層', rank: 'S' },
+      { id: 28, path: 'ダイヤモンド / 空孔', branch: '空孔', topic: '酸素プラズマ', author: 'Kim et al.', method: 'O2プラズマ＋酸化', finding: 'NV消失・再生成', rank: 'S' },
+      { id: 29, path: 'ダイヤモンド / 生成方法', branch: '生成方法', topic: 'ICP/RIE比較', author: 'Favaro de Oliveira / Cui / Radtke 系', method: 'O2 ICP、RIE、0 Vバイアス', finding: '低ダメージ表面処理', rank: 'S' },
+      { id: 30, path: 'ダイヤモンド / 窒素', branch: '窒素', topic: 'NVH化', author: '未入力', method: '水素プラズマ/水素終端', finding: 'NVH化', rank: '' },
+    ];
+
+    const reviews = [
+      { id: 'R1', path: 'NVセンター / レビュー論文', branch: 'レビュー論文', topic: 'NV中心の物理', author: 'Doherty review系', method: '欠陥準位・スピン・電荷状態の整理', finding: 'NVの基礎地図', rank: 'S' },
+      { id: 'R2', path: 'NVセンター / レビュー論文', branch: 'レビュー論文', topic: '量子センシング応用', author: 'Schirhagl / Rondin review系', method: '磁場・温度・生体/材料計測の整理', finding: '応用範囲の全体像', rank: 'S' },
+    ];
+
+    const categories = {
+      root: { title: 'NVセンター', refs: [...reviews, ...references], memo: 'NV中心は、ダイヤモンド格子中の置換型窒素 N_s と隣接空孔 V のペア。文献は「材料としてのダイヤモンド」「形成過程」「応用先」に分けると読みやすい。' },
+      review: { title: 'レビュー論文', refs: reviews, memo: '最初に全体像を掴む枝。欠陥構造、スピン、電荷状態、形成、センシング応用の用語をここで揃える。' },
+      diamond: { title: 'ダイヤモンド', refs: references.filter(r => r.path.startsWith('ダイヤモンド')), memo: '材料側の枝。窒素、空孔、生成方法を分けて読む。' },
+      nitrogen: { title: '窒素', refs: references.filter(r => r.branch === '窒素' || r.branch === '窒素注入'), memo: 'Nがどこに入り、どの深さに分布し、どの程度NVへ変換されるかを見る。' },
+      vacancy: { title: '空孔', refs: references.filter(r => r.branch === '空孔' || r.branch === '空孔生成'), memo: '空孔を作る・動かす・消す過程。NV形成ではNだけでなくVの供給と損傷制御が効く。' },
+      synthesis: { title: '生成方法', refs: references.filter(r => r.branch === '生成方法'), memo: '注入、マスク、分子注入、共注入、プラズマを横に比較する枝。' },
+      formation: { title: '形成', refs: references.filter(r => r.path.startsWith('形成')), memo: 'NVができる過程。空孔生成、窒素注入、低エネルギー照射を分ける。' },
+      vacancyCreation: { title: '空孔生成', refs: references.filter(r => r.branch === '空孔生成' || r.branch === '空孔'), memo: 'He、C、H、O2プラズマなどで空孔や損傷を制御する枝。' },
+      nImplant: { title: '窒素注入', refs: references.filter(r => r.branch === '窒素注入'), memo: '低keV N注入の深さ、チャネリング、収率、アニール条件を見る枝。' },
+      lowEnergy: { title: '低エネルギー照射', refs: references.filter(r => r.branch === '低エネルギー照射'), memo: '直接knock-onではなく、電子励起・キャリア・電荷状態変換を主作用として読む枝。' },
+      application: { title: '応用', refs: references.filter(r => r.path.startsWith('応用')), memo: '作ったNVをどこで使うか。ナノダイヤモンドとバルクダイヤモンドで要求条件が変わる。' },
+      nano: { title: 'ナノダイヤモンド', refs: references.filter(r => r.branch === 'ナノダイヤモンド'), memo: '蛍光ナノダイヤ、バイオ・局所プローブ向け。粒径、表面、発光安定性が論点。' },
+      bulk: { title: 'バルクダイヤモンド', refs: references.filter(r => r.branch === 'バルクダイヤモンド'), memo: '薄いNV層や高感度センサー層。深さ分布、密度、スピン特性のバランスを見る。' },
+    };
+
+    const treeNodes = [
+      { key: 'root', label: 'NVセンター', x: 36, y: 308, cls: 'root' },
+      { key: 'review', label: 'レビュー論文', x: 224, y: 46, cls: 'major', parent: 'root' },
+      { key: 'diamond', label: 'ダイヤモンド', x: 224, y: 164, cls: 'major', parent: 'root' },
+      { key: 'formation', label: '形成', x: 224, y: 314, cls: 'major', parent: 'root' },
+      { key: 'application', label: '応用', x: 224, y: 492, cls: 'major', parent: 'root' },
+      { key: 'nitrogen', label: '窒素', x: 414, y: 110, parent: 'diamond' },
+      { key: 'vacancy', label: '空孔', x: 414, y: 164, parent: 'diamond' },
+      { key: 'synthesis', label: '生成方法', x: 414, y: 218, parent: 'diamond' },
+      { key: 'vacancyCreation', label: '空孔生成', x: 414, y: 284, parent: 'formation' },
+      { key: 'nImplant', label: '窒素注入', x: 414, y: 340, parent: 'formation' },
+      { key: 'lowEnergy', label: '低エネルギー照射', x: 414, y: 396, parent: 'formation' },
+      { key: 'nano', label: 'ナノダイヤモンド', x: 414, y: 468, parent: 'application' },
+      { key: 'bulk', label: 'バルクダイヤモンド', x: 414, y: 534, parent: 'application' },
+    ];
+
+    const shotSets = {
+      root: ['structure', 'energy', 'formation', 'application'],
+      review: ['energy', 'structure', 'application', 'charge'],
+      diamond: ['lattice', 'structure', 'surface', 'method'],
+      nitrogen: ['nitrogen', 'depth', 'yield', 'channeling'],
+      vacancy: ['vacancy', 'damage', 'plasma', 'recombine'],
+      synthesis: ['method', 'mask', 'molecule', 'plasma'],
+      formation: ['formation', 'depth', 'vacancy', 'excitation'],
+      vacancyCreation: ['vacancy', 'damage', 'helium', 'delta'],
+      nImplant: ['depth', 'nitrogen', 'yield', 'channeling'],
+      lowEnergy: ['excitation', 'dose', 'carrier', 'thermal'],
+      application: ['application', 'bulk', 'nano', 'sensing'],
+      nano: ['nano', 'surface', 'fluorescence', 'bio'],
+      bulk: ['bulk', 'layer', 'sensing', 'depth'],
+    };
+
+    const shotLabels = {
+      structure: 'NV構造',
+      energy: '準位・スピン',
+      formation: '形成経路',
+      application: '応用地図',
+      charge: '電荷状態',
+      lattice: 'ダイヤ結晶',
+      surface: '表面終端',
+      method: '生成方法比較',
+      nitrogen: 'N導入',
+      depth: '深さ分布',
+      yield: '生成収率',
+      channeling: 'チャネリング',
+      vacancy: '空孔供給',
+      damage: '損傷バランス',
+      plasma: 'プラズマ処理',
+      recombine: 'N_i + V',
+      mask: 'マスク配置',
+      molecule: '分子注入',
+      excitation: '電子励起',
+      helium: 'He照射',
+      delta: 'δ層',
+      dose: '線量依存',
+      carrier: 'キャリア拡散',
+      thermal: '熱効果否定',
+      bulk: 'バルク層',
+      nano: 'ナノ粒子',
+      sensing: 'センシング',
+      layer: 'NVセンサー層',
+      fluorescence: '蛍光',
+      bio: 'バイオ応用',
+    };
+
+    let activeKey = 'root';
+
+    function rankClass(rank) {
+      return rank ? String(rank).toLowerCase() : 'todo';
+    }
+
+    function nodeCenter(node) {
+      const w = node.cls === 'root' ? 145 : node.cls === 'major' ? 132 : 110;
+      const h = node.cls === 'root' ? 60 : node.cls === 'major' ? 52 : 42;
+      return { x: node.x + w / 2, y: node.y + h / 2 };
+    }
+
+    function drawLine(parent, child) {
+      const a = nodeCenter(parent);
+      const b = nodeCenter(child);
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const length = Math.sqrt(dx * dx + dy * dy);
+      const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+      return `<span class="branch-line" style="left:${a.x}px; top:${a.y}px; width:${length}px; transform: rotate(${angle}deg)"></span>`;
+    }
+
+    function renderTree() {
+      const canvas = document.getElementById('treeCanvas');
+      const byKey = Object.fromEntries(treeNodes.map(node => [node.key, node]));
+      const lines = treeNodes.filter(node => node.parent).map(node => drawLine(byKey[node.parent], node)).join('');
+      const nodes = treeNodes.map(node => {
+        const count = categories[node.key]?.refs.length || 0;
+        return `<div class="tree-node ${node.cls || ''} ${node.key === activeKey ? 'active' : ''}" style="left:${node.x}px; top:${node.y}px" data-key="${node.key}">
+          ${node.label}<small>${count}件</small>
+        </div>`;
+      }).join('');
+      canvas.innerHTML = lines + nodes;
+    }
+
+    function shotSvg(type) {
+      const common = '<rect x="10" y="10" width="300" height="150" rx="10" fill="#f8fdff" stroke="#96d9f5" stroke-width="2"/>';
+      if (['structure', 'lattice', 'nitrogen', 'vacancy', 'recombine'].includes(type)) {
+        return `${common}
+          <g stroke="#7aa8c4" stroke-width="3">
+            <line x1="72" y1="58" x2="124" y2="96"/><line x1="124" y1="96" x2="178" y2="58"/><line x1="178" y1="58" x2="230" y2="96"/>
+            <line x1="72" y1="118" x2="124" y2="96"/><line x1="178" y1="118" x2="124" y2="96"/><line x1="230" y1="96" x2="178" y2="118"/>
+          </g>
+          <circle cx="72" cy="58" r="15" fill="#fff" stroke="#183858" stroke-width="2"/><circle cx="124" cy="96" r="15" fill="#fff" stroke="#183858" stroke-width="2"/>
+          <circle cx="178" cy="58" r="15" fill="#fff" stroke="#183858" stroke-width="2"/><circle cx="230" cy="96" r="15" fill="#fff" stroke="#183858" stroke-width="2"/>
+          <circle cx="178" cy="118" r="17" fill="#2d8cff" stroke="#183858" stroke-width="2"/><circle cx="230" cy="118" r="19" fill="none" stroke="#e64c4c" stroke-width="5"/>
+          <text x="166" y="124" font-size="15" font-weight="900" fill="#fff">N</text><text x="224" y="124" font-size="15" font-weight="900" fill="#e64c4c">V</text>`;
+      }
+      if (['depth', 'yield', 'dose', 'thermal', 'channeling'].includes(type)) {
+        return `${common}
+          <line x1="52" y1="130" x2="276" y2="130" stroke="#183858" stroke-width="3"/><line x1="52" y1="130" x2="52" y2="38" stroke="#183858" stroke-width="3"/>
+          <path d="M58 120 C92 70, 130 46, 174 82 S238 126, 272 96" fill="none" stroke="#ff79be" stroke-width="6" stroke-linecap="round"/>
+          <path d="M60 126 C112 118, 170 104, 254 52" fill="none" stroke="#2d8cff" stroke-width="4" stroke-dasharray="7 6"/>
+          <circle cx="174" cy="82" r="8" fill="#ffe779" stroke="#183858" stroke-width="2"/>
+          <text x="42" y="32" font-size="12" font-weight="900" fill="#183858">NV</text><text x="238" y="148" font-size="12" font-weight="900" fill="#183858">depth</text>`;
+      }
+      if (['method', 'mask', 'molecule', 'plasma', 'surface'].includes(type)) {
+        return `${common}
+          <rect x="52" y="96" width="220" height="42" rx="7" fill="#ecfbff" stroke="#183858" stroke-width="3"/>
+          <rect x="84" y="56" width="156" height="24" rx="6" fill="#ffe779" stroke="#183858" stroke-width="3"/>
+          <circle cx="110" cy="118" r="10" fill="#2d8cff"/><circle cx="162" cy="118" r="12" fill="none" stroke="#e64c4c" stroke-width="4"/><circle cx="216" cy="118" r="10" fill="#2d8cff"/>
+          <path d="M92 38 L110 96 M154 34 L162 96 M230 38 L216 96" stroke="#ff79be" stroke-width="5" stroke-linecap="round"/>
+          <text x="100" y="28" font-size="12" font-weight="900" fill="#183858">mask / plasma / ion</text>`;
+      }
+      if (['excitation', 'carrier', 'charge', 'energy'].includes(type)) {
+        return `${common}
+          <rect x="60" y="104" width="202" height="38" rx="8" fill="#ecfbff" stroke="#183858" stroke-width="3"/>
+          <path d="M72 42 C88 76, 112 94, 146 110" fill="none" stroke="#ffe779" stroke-width="7" stroke-linecap="round"/>
+          <path d="M142 38 C158 82, 194 98, 224 118" fill="none" stroke="#ffe779" stroke-width="7" stroke-linecap="round"/>
+          <circle cx="150" cy="124" r="12" fill="#2d8cff" stroke="#183858" stroke-width="2"/><circle cx="198" cy="124" r="14" fill="none" stroke="#e64c4c" stroke-width="4"/>
+          <text x="78" y="28" font-size="12" font-weight="900" fill="#183858">e-h excitation / charge state</text>`;
+      }
+      if (['application', 'bulk', 'nano', 'sensing', 'layer', 'fluorescence', 'bio'].includes(type)) {
+        return `${common}
+          <circle cx="86" cy="88" r="34" fill="#ecfbff" stroke="#183858" stroke-width="3"/><circle cx="86" cy="88" r="7" fill="#ff79be"/>
+          <rect x="154" y="58" width="112" height="72" rx="9" fill="#fff" stroke="#183858" stroke-width="3"/>
+          <path d="M166 116 C190 78, 214 104, 252 70" fill="none" stroke="#2d8cff" stroke-width="5" stroke-linecap="round"/>
+          <path d="M96 88 C132 86, 144 74, 154 70" fill="none" stroke="#8b7cff" stroke-width="4" stroke-dasharray="6 5"/>
+          <text x="54" y="146" font-size="12" font-weight="900" fill="#183858">nano / bulk sensing</text>`;
+      }
+      return common;
+    }
+
+    function renderShots(key) {
+      const grid = document.getElementById('screenshotGrid');
+      const shots = shotSets[key] || shotSets.root;
+      grid.innerHTML = shots.map(type => `
+        <article class="shot">
+          <p class="shot-label">${shotLabels[type] || type}</p>
+          <svg viewBox="0 0 320 170" role="img" aria-label="${shotLabels[type] || type} screenshot">${shotSvg(type)}</svg>
+        </article>
+      `).join('');
+    }
+
+    function renderPapers(key) {
+      const data = categories[key] || categories.root;
+      const list = document.getElementById('paperList');
+      const refs = data.refs;
+      document.getElementById('categoryTitle').textContent = data.title;
+      document.getElementById('paperCount').textContent = `${refs.length}件`;
+      document.getElementById('categoryMemo').textContent = data.memo;
+      list.innerHTML = refs.map(ref => `
+        <article class="paper-card">
+          <span class="paper-number">${ref.id}</span>
+          <span class="paper-main">
+            <strong>${ref.author}｜${ref.topic}</strong>
+            <span>${ref.method} / ${ref.finding}</span>
+          </span>
+          <span class="rank ${rankClass(ref.rank)}">${ref.rank || '要'}</span>
+        </article>
+      `).join('');
+    }
+
+    function selectCategory(key) {
+      activeKey = key;
+      renderTree();
+      renderShots(key);
+      renderPapers(key);
+    }
+
+    document.addEventListener('click', event => {
+      const node = event.target.closest('.tree-node');
+      if (node) selectCategory(node.dataset.key);
+    });
+
+    selectCategory('root');
+  </script>
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>研究計画 | NV center training</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23ffe066'/%3E%3Ccircle cx='12' cy='16' r='5' fill='%232d6cdf'/%3E%3Ccircle cx='21' cy='16' r='5' fill='none' stroke='%23202124' stroke-width='3'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #202124;
+      --muted: #5f6368;
+      --line: #d8dfe8;
+      --pink: #ff7ab8;
+      --yellow: #ffe066;
+      --blue: #2d6cdf;
+      --game-pink: #ff4fb3;
+      --game-orange: #ff9d3d;
+      --game-yellow: #ffe25c;
+      --game-cyan: #35c7ff;
+      --game-blue: #4f7dff;
+      --game-violet: #8c6bff;
+      --game-navy: #24304f;
+      --game-shadow: 0 18px 48px rgba(53, 86, 166, 0.18), 0 8px 18px rgba(255, 79, 179, 0.10);
+      font-family: "Segoe UI", "Yu Gothic UI", "Hiragino Sans", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 16% 12%, rgba(255, 226, 92, 0.42), transparent 28%),
+        radial-gradient(circle at 88% 10%, rgba(255, 79, 179, 0.24), transparent 30%),
+        radial-gradient(circle at 76% 86%, rgba(53, 199, 255, 0.18), transparent 30%),
+        linear-gradient(135deg, #fffaf0 0%, #ffffff 52%, #eef7ff 100%);
+      min-height: 100dvh;
+    }
+
+    .shell {
+      width: min(1100px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 22px 0 42px;
+      display: grid;
+      gap: 18px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .kicker {
+      width: fit-content;
+      margin: 0 0 8px;
+      padding: 5px 10px;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--game-pink), var(--game-violet));
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+      box-shadow: 0 8px 18px rgba(255, 79, 179, 0.24);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 7vw, 64px);
+      line-height: 0.96;
+      letter-spacing: 0;
+      color: var(--game-navy);
+      text-shadow: 3px 3px 0 rgba(255, 226, 92, 0.95), 6px 6px 0 rgba(53, 199, 255, 0.18);
+    }
+
+    .lead {
+      margin: 10px 0 0;
+      max-width: 720px;
+      color: #485465;
+      font-weight: 700;
+      line-height: 1.7;
+      display: none;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    a.button,
+    button {
+      min-height: 40px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(79, 125, 255, 0.28);
+      border-radius: 8px;
+      background: linear-gradient(135deg, #ffffff, #eef8ff);
+      color: var(--game-blue);
+      font-weight: 900;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(79, 125, 255, 0.16);
+    }
+
+    button.primary {
+      border: 0;
+      background: linear-gradient(135deg, var(--game-yellow), var(--game-orange), var(--game-pink));
+      color: #fff;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.20);
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .coach {
+      min-height: 100%;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 10px;
+      padding: 18px;
+      border: 1px solid rgba(79, 125, 255, 0.24);
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,255,255,0.84));
+      box-shadow: var(--game-shadow);
+      text-align: center;
+    }
+
+    .coach img {
+      width: min(170px, 80%);
+      aspect-ratio: 1;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 16px rgba(0,0,0,0.18));
+    }
+
+    .coach strong {
+      font-size: 18px;
+    }
+
+    .coach p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+      font-weight: 700;
+    }
+
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      padding: 14px;
+      border: 1px solid rgba(79, 125, 255, 0.18);
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,252,255,0.92));
+      font-weight: 900;
+    }
+
+    textarea,
+    input {
+      width: 100%;
+      border: 1px solid rgba(79, 125, 255, 0.32);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      line-height: 1.5;
+    }
+
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    .wide {
+      grid-column: 1 / -1;
+    }
+
+    .status {
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid rgba(79, 125, 255, 0.28);
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.94), rgba(239,248,255,0.9));
+      color: #3d4650;
+      font-weight: 800;
+      box-shadow: 0 10px 20px rgba(79, 125, 255, 0.14);
+    }
+
+    @media (max-width: 780px) {
+      header,
+      .board {
+        grid-template-columns: 1fr;
+        flex-direction: column;
+      }
+
+      .nav {
+        justify-content: flex-start;
+      }
+
+      .plan-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div>
+        <p class="kicker">RESEARCH TRAINING</p>
+        <h1>研究計画</h1>
+        <p class="lead">DFT計算や照射モデルを、あとから見返せる形に分解します。仮説、今日やること、結果、次の一手を短く残しておくと、研究が迷子になりにくくなります。</p>
+      </div>
+      <nav class="nav" aria-label="navigation">
+        <a class="button" href="../index.html">タイトルへ</a>
+        <a class="button" href="../index.html#simulation">シミュレーション</a>
+      </nav>
+    </header>
+
+    <section class="board">
+      <aside class="coach">
+        <img src="../assets/chibis/hinata-plan.png" alt="小羽ひなたのミニキャラ" />
+        <strong>小羽ひなた</strong>
+        <p>計画を小さく切って、今日の勝ち筋を作る担当です。</p>
+      </aside>
+      <form id="planForm" class="plan-grid">
+        <label class="wide">
+          研究テーマ
+          <input id="topic" placeholder="例: 低エネルギー電子照射でN_i + V1 + V2複合体がNVへ再構成する条件" />
+        </label>
+        <label>
+          仮説
+          <textarea id="hypothesis" placeholder="例: knock-onではなく、電子正孔対生成と電荷状態変化によりポテンシャル面が変わる。"></textarea>
+        </label>
+        <label>
+          今日やること
+          <textarea id="todo" placeholder="例: 13 eV到達深さの線、2D模式図、参考文献カードの整理。"></textarea>
+        </label>
+        <label>
+          観測・結果
+          <textarea id="result" placeholder="例: 低エネルギーでは炭素knock-onは無視、表面近傍励起を主項にする。"></textarea>
+        </label>
+        <label>
+          次に確認すること
+          <textarea id="next" placeholder="例: NEB障壁、電荷状態ごとのUq(R)、実験線量依存との対応。"></textarea>
+        </label>
+        <div class="wide nav">
+          <button class="primary" type="button" id="saveBtn">保存</button>
+          <button type="button" id="exportBtn">JSON出力</button>
+          <button type="button" id="clearBtn">この計画を消す</button>
+        </div>
+        <div id="status" class="status wide">入力内容はこのブラウザに自動保存されます。</div>
+      </form>
+    </section>
+  </div>
+  <script>
+    const STORE_KEY = 'nvDftResearchPlan.v1';
+    const ids = ['topic', 'hypothesis', 'todo', 'result', 'next'];
+    const status = document.getElementById('status');
+
+    function collect() {
+      return Object.fromEntries(ids.map(id => [id, document.getElementById(id).value]));
+    }
+
+    function fill(data) {
+      ids.forEach(id => {
+        document.getElementById(id).value = data?.[id] || '';
+      });
+    }
+
+    function save(message = '保存しました。') {
+      localStorage.setItem(STORE_KEY, JSON.stringify({ ...collect(), updatedAt: new Date().toISOString() }));
+      status.textContent = message;
+    }
+
+    try {
+      fill(JSON.parse(localStorage.getItem(STORE_KEY) || '{}'));
+    } catch {
+      fill({});
+    }
+
+    ids.forEach(id => document.getElementById(id).addEventListener('input', () => save('自動保存しました。')));
+    document.getElementById('saveBtn').addEventListener('click', () => save());
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      if (!confirm('研究計画の入力欄を空にしますか。')) return;
+      localStorage.removeItem(STORE_KEY);
+      fill({});
+      status.textContent = 'この端末の研究計画を空にしました。';
+    });
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(collect(), null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'nv-dft-research-plan.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      status.textContent = 'JSONファイルを書き出しました。';
+    });
+  </script>
+</body>
+</html>
