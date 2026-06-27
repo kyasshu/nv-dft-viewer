@@ -221,6 +221,132 @@
       line-height: 1.65;
     }
 
+
+    .manual-detail[hidden] {
+      display: none;
+    }
+
+    .manual-detail {
+      padding-top: 4px;
+      border-top: 1px solid var(--line);
+    }
+
+    .manual-doc {
+      display: grid;
+      gap: 10px;
+      color: #344054;
+      line-height: 1.75;
+      font-weight: 700;
+    }
+
+    .manual-doc h3,
+    .manual-doc h4,
+    .manual-doc p,
+    .manual-doc ul,
+    .manual-doc figure,
+    .manual-doc aside {
+      margin: 0;
+    }
+
+    .manual-doc h3 {
+      margin-top: 10px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(79, 125, 255, 0.18);
+      color: var(--game-navy);
+      font-size: 22px;
+      line-height: 1.35;
+    }
+
+    .manual-doc h3:first-child {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .manual-doc h4 {
+      margin-top: 6px;
+      color: #1f4fbf;
+      font-size: 18px;
+      line-height: 1.45;
+    }
+
+    .manual-subtitle {
+      color: #42526b;
+      font-size: 15px;
+    }
+
+    .manual-small,
+    .manual-caption,
+    .manual-write-line {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .manual-bullets,
+    .manual-checklist {
+      padding-left: 20px;
+      display: grid;
+      gap: 4px;
+    }
+
+    .manual-bullets-sub {
+      margin-left: 14px;
+      color: #526071;
+    }
+
+    .manual-checklist {
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .manual-checklist li::before {
+      content: "□";
+      margin-right: 8px;
+      color: var(--game-blue);
+      font-weight: 900;
+    }
+
+    .manual-purpose {
+      padding: 10px 12px;
+      border-left: 4px solid var(--game-blue);
+      background: #f5fbff;
+    }
+
+    .manual-caution {
+      padding: 10px 12px;
+      border-left: 4px solid var(--game-orange);
+      background: #fff8e5;
+      color: #6a4a00;
+      font-weight: 900;
+    }
+
+    .manual-note-label {
+      margin-top: 4px;
+      color: var(--game-navy);
+      font-weight: 900;
+    }
+
+    .manual-write-line {
+      overflow-wrap: anywhere;
+      letter-spacing: 0;
+    }
+
+    .manual-figure {
+      display: grid;
+      justify-items: center;
+      padding: 8px 0 2px;
+    }
+
+    .manual-figure img {
+      width: min(100%, 720px);
+      max-height: 520px;
+      object-fit: contain;
+      border: 1px solid rgba(79, 125, 255, 0.18);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+
     textarea {
       width: 100%;
       min-height: 120px;
@@ -262,6 +388,7 @@
 
     <div class="equipment-list" aria-label="equipment list">
       <button type="button" data-device="EBEP" class="active">EBEP</button>
+      <button type="button" data-device="パルスバイアスセット">パルスバイアスセット</button>
       <button type="button" data-device="レーザー顕微鏡">レーザー顕微鏡</button>
       <button type="button" data-device="ラマン顕微鏡">ラマン顕微鏡</button>
       <button type="button" data-device="ODMR">ODMR</button>
@@ -300,6 +427,7 @@
           </article>
         </div>
         <div id="note" class="note"></div>
+        <section id="deviceDetail" class="manual-detail" hidden></section>
         <label>
           自分用メモ
           <textarea id="manualMemo" placeholder="装置担当者から聞いた注意、試料名、測定条件など"></textarea>
@@ -307,6 +435,369 @@
       </main>
     </section>
   </div>
+  <template id="pulseBiasManualTemplate">
+    <div class="manual-doc">
+      <h3>低エネルギー電子照射<br>操作マニュアル</h3>
+      <p class="manual-subtitle">SG-4104・Matsusadaプローブアンプ・HIOKI・10 kΩ箱によるパルスバイアスセット手順</p>
+      <p class="manual-small">加筆しやすいように、表は使わず、箇条書き中心で整理</p>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-01.png" alt="パルスバイアスセット参考画像 1" loading="lazy" />
+      </figure>
+      <p class="manual-caption">図1　最初に見る全体ブロック線図。電気の流れと電子の通り道を分けて見る。</p>
+      <h3>0. このマニュアルの流れ</h3>
+      <ul class="manual-bullets">
+        <li>まず、装置同士がどうつながるかをブロック線図で確認する。</li>
+        <li>次に、装置一つ一つの役割を確認する。</li>
+        <li>SG-4104、Matsusadaプローブアンプ、HIOKI、抵抗、試料ホルダーは「パルスバイアスセット」としてまとめて確認する。</li>
+        <li>その後、「波形だけ確認する場合」「プローブアンプ出力を確認する場合」「金属ダミーで試す場合」「ダイヤモンド本番の場合」に分けて操作する。</li>
+        <li>最後に、注意事項、止める条件、トラブル時の確認点を見る。</li>
+      </ul>
+      <aside class="manual-caution">注意：最初は必ずプラズマOFF、LaB6 OFF、メッシュ電圧OFFで確認する。</aside>
+      <p class="manual-note-label">追記欄：</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <h3>1. 装置接続のブロック線図</h3>
+      <p>このページでは、どの装置がどこにつながるかだけを確認します。細かい操作は後の章で分けて説明します。</p>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-02.png" alt="パルスバイアスセット参考画像 2" loading="lazy" />
+      </figure>
+      <p class="manual-caption">図2　電気接続とプラズマ配置の全体図。</p>
+      <ul class="manual-bullets">
+        <li>SG-4104は、100 ms ON / 900 ms OFF の波を作る。</li>
+        <li>Matsusadaプローブアンプは、SG-4104の小さい信号を大きくして試料側に出す。</li>
+        <li>抵抗は、電流が流れすぎないようにする安全部品。</li>
+        <li>HIOKIは、試料電圧や抵抗に出た電圧を見る装置。電圧を出す装置ではない。</li>
+        <li>試料ホルダーは、金属ダミーまたはダイヤモンドを置く台。</li>
+        <li>チャンバーGNDは0 Vの基準。戻り道として必要。</li>
+        <li>パルスバイアスセットは、試料側へ正パルスを入れ、HIOKIで試料電圧と抵抗電圧を記録する確認単位として扱う。</li>
+      </ul>
+      <h3>2. 装置一つ一つの解説</h3>
+      <h4>2-1. SG-4104：波を作る箱</h4>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-03.jpg" alt="パルスバイアスセット参考画像 3" loading="lazy" />
+      </figure>
+      <p class="manual-caption">写真1　SG-4104。OUTPUTからMatsusadaのVcon-inへ入れる。</p>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-04.jpg" alt="パルスバイアスセット参考画像 4" loading="lazy" />
+      </figure>
+      <p class="manual-caption">写真2　SG-4104の設定例。3番のパルス波、1.00 Hz。</p>
+      <ul class="manual-bullets">
+        <li>役割は、ON/OFFのリズムを作ること。</li>
+        <li>使う波形は、3番のパルス波。</li>
+        <li>使うモードはCONT。GATE、TRIG、MANは使わない。</li>
+        <li>周波数は1.00 Hz。</li>
+        <li>Dutyは10%。これでON 100 ms、OFF 900 msになる。</li>
+        <li>SG-4104の電圧は、そのまま試料電圧ではない。プローブアンプで約12倍される。</li>
+      </ul>
+      <ul class="manual-bullets manual-bullets-sub">
+        <li>試料側を0〜+3 Vにしたい場合、SG-4104側は0〜+0.25 V程度にする。</li>
+        <li>試料側を0〜+5 Vにしたい場合、SG-4104側は0〜+0.42 V程度にする。</li>
+        <li>最初は200 mV程度から始め、HIOKIで実際の出力を確認する。</li>
+      </ul>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-05.jpg" alt="パルスバイアスセット参考画像 5" loading="lazy" />
+      </figure>
+      <p class="manual-caption">写真3　SG-4104が200 mV表示の例。約12倍後はおよそ2.4 V。</p>
+      <h4>2-2. Matsusadaプローブアンプ：電圧を強くする箱</h4>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-06.jpg" alt="パルスバイアスセット参考画像 6" loading="lazy" />
+      </figure>
+      <p class="manual-caption">写真4　Matsusadaプローブアンプ。Vcon-in、OUTPUT、CV/CC、BIASを確認する。</p>
+      <ul class="manual-bullets">
+        <li>役割は、SG-4104の小さい波を試料にかけられる電圧にすること。</li>
+        <li>SG-4104のOUTPUTを、プローブアンプのVcon-inへ入れる。</li>
+        <li>プローブアンプの出力+を、抵抗を通して試料ホルダーへつなぐ。</li>
+        <li>プローブアンプの出力−を、チャンバーGNDへつなぐ。</li>
+        <li>写真の表示が0.00 Vの場合、出力が出ていない、または入力が反映されていない可能性がある。</li>
+      </ul>
+      <ul class="manual-bullets manual-bullets-sub">
+        <li>OUTPUTを押しても反応しない場合は、まず試料を外して、プローブアンプ出力+/-だけを測る。</li>
+        <li>BIASつまみで手動出力できるか確認すると、プローブアンプ本体の問題か、Vcon-in側の問題かを分けられる。</li>
+      </ul>
+      <h4>2-3. HIOKI LR8431：波を見る箱</h4>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-07.jpg" alt="パルスバイアスセット参考画像 7" loading="lazy" />
+      </figure>
+      <p class="manual-caption">写真5　HIOKI LR8431。電圧波形の確認と記録に使う。</p>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-08.jpg" alt="パルスバイアスセット参考画像 8" loading="lazy" />
+      </figure>
+      <p class="manual-caption">写真6　HIOKIの測定画面。緑や赤の波形で電圧変化を見る。</p>
+      <ul class="manual-bullets">
+        <li>HIOKIは電圧の変化を見る装置。電流を直接見る装置ではない。</li>
+        <li>試料ホルダー電圧を見るときは、CH+を試料ホルダー、CH−をGNDにつなぐ。</li>
+        <li>抵抗にかかった電圧を見るときは、抵抗の両端をHIOKIで見る。</li>
+        <li>電流は、抵抗にかかった電圧を抵抗値で割って計算する。</li>
+        <li>画面の「表示上限」「表示下限」は、表示スケール。実際にその電圧が出ているという意味ではない。</li>
+      </ul>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-09.jpg" alt="パルスバイアスセット参考画像 9" loading="lazy" />
+      </figure>
+      <p class="manual-caption">写真7　表示スケールを見ている例。スケール値と実測値を混同しない。</p>
+      <h4>2-4. 10 kΩ箱・抵抗：電流止め</h4>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-10.jpg" alt="パルスバイアスセット参考画像 10" loading="lazy" />
+      </figure>
+      <p class="manual-caption">写真8　10 kΩ箱。使う前にテスターで抵抗値を確認する。</p>
+      <ul class="manual-bullets">
+        <li>抵抗は、電流が流れすぎないようにする安全部品。</li>
+        <li>今回の10 kΩ箱は、10 kΩとして使える可能性がある。まずテスターで確認する。</li>
+        <li>抵抗が10 kΩで、そこに1 V出たら、電流は100 µA。</li>
+        <li>抵抗が10 kΩで、そこに10 V出たら、電流は1 mA。</li>
+        <li>抵抗が10 kΩで、そこに100 V出たら、電流は10 mA。</li>
+      </ul>
+      <aside class="manual-caution">注意：10 kΩは最初の安全確認には少し小さい。1 MΩが用意できるなら、最初は1 MΩから始める。</aside>
+      <h4>2-5. 試料ホルダー：金属ダミーまたはダイヤモンドを置く台</h4>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-11.png" alt="パルスバイアスセット参考画像 11" loading="lazy" />
+      </figure>
+      <p class="manual-caption">写真9　試料ホルダー先端の構造イメージ。前面は1×1 mmだけ露出させる。</p>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-12.png" alt="パルスバイアスセット参考画像 12" loading="lazy" />
+      </figure>
+      <p class="manual-caption">図3　金属ダミーとダイヤモンドで何が違うか。</p>
+      <ul class="manual-bullets">
+        <li>最初は金属ダミーを使う。金属ダミーは電子がその位置まで来ているかを見るための上限チェック。</li>
+        <li>ダイヤモンドは絶縁体なので、金属ダミーと同じように電流が流れるとは限らない。</li>
+        <li>前面に見せるのは1×1 mmの試料面だけ。周囲に銅端子や大きな金属面を出さない。</li>
+        <li>銅は前面に出さない。過去に赤熱・汚染が起きたため、前面材料はMoまたはSUSを基本にする。</li>
+      </ul>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-13.png" alt="パルスバイアスセット参考画像 13" loading="lazy" />
+      </figure>
+      <p class="manual-caption">図4　金属板と線を安定してつなぐ考え方。接着剤だけで導通を作らない。</p>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-14.png" alt="パルスバイアスセット参考画像 14" loading="lazy" />
+      </figure>
+      <p class="manual-caption">図5　小型クランプの考え方。前面を塞がず、側面・後ろで固定する。</p>
+      <h4>2-6. パルスバイアスセット：正パルスを試料へ入れる一式</h4>
+      <ul class="manual-bullets">
+        <li>SG-4104、Matsusadaプローブアンプ、HIOKI、電流制限抵抗、試料ホルダー、チャンバーGNDを一つのセットとして確認する。</li>
+        <li>目的は、電子照射中の試料側へ0 V〜+3〜+5 V程度の正パルスを入れ、ON/OFFと抵抗電圧を記録すること。</li>
+        <li>標準の入口条件は、1.00 Hz、Duty 10%、ON 100 ms、OFF 900 ms。最初は0〜+3 Vから確認する。</li>
+        <li>BIASつまみは本体単体の切り分け確認に使う。本番条件ではVcon-inからのパルス入力を基本にする。</li>
+        <li>HIOKIは、試料ホルダー電圧を必ず見る。チャンネルに余裕があれば、抵抗両端の電圧も同時に見る。</li>
+        <li>電流は、抵抗にかかった電圧を抵抗値で割って換算する。HIOKIの表示スケールを電流と混同しない。</li>
+      </ul>
+      <aside class="manual-caution">注意：配線変更は、プラズマOFF、LaB6 OFF、メッシュ電圧OFF、Matsusada OUTPUT OFFを確認してから行う。</aside>
+      <h3>3. 目標波形と調整の考え方</h3>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-15.png" alt="パルスバイアスセット参考画像 15" loading="lazy" />
+      </figure>
+      <p class="manual-caption">図6　目標波形。100 msだけON、900 ms休む。</p>
+      <ul class="manual-bullets">
+        <li>使う波形は、0 Vから+3〜+5 Vへ上がる正パルス。</li>
+        <li>負電圧には振らない。</li>
+        <li>ON 100 msは、電子を引き寄せる時間。</li>
+        <li>OFF 900 msは、帯電と発熱を逃がす時間。</li>
+        <li>電流が小さい場合は、電圧を+3 Vから+5 Vへ上げる。</li>
+        <li>電流が大きい場合は、電圧を下げるか、ON時間を短くする。</li>
+        <li>電流がON直後だけ出てすぐ落ちる場合は、帯電が疑われる。そのときはONを10〜50 msに短くし、OFFを長くする。</li>
+      </ul>
+      <h3>4. ケース別の操作手順</h3>
+      <h4>4-0. パルスバイアスセットを組む前の確認</h4>
+      <p class="manual-purpose">目的：各装置をつないだ後で迷わないように、信号の入口、出力、戻り道、測定点を先に確認する。</p>
+      <ul class="manual-checklist">
+        <li>SG-4104、Matsusada、HIOKI、抵抗箱、試料ホルダー、GND線を見える順に並べる。</li>
+        <li>SG-4104 OUTPUTからMatsusadaのVcon-inへ入ることを確認する。</li>
+        <li>Matsusada出力+から抵抗を通して試料ホルダーへつなぐ。</li>
+        <li>Matsusada出力−をチャンバーGNDへ戻す。</li>
+        <li>HIOKI CH1は試料ホルダー対GNDを見る。CH2が使える場合は抵抗両端を見る。</li>
+        <li>SG-4104は3番パルス波、CONT、1.00 Hz、Duty 10%、0〜+側だけにする。</li>
+        <li>Matsusada OUTPUT OFFのまま、導通とショートをテスターで確認する。</li>
+        <li>金属ダミーで確認するまでは、ダイヤモンドを接続しない。</li>
+      </ul>
+      <aside class="manual-caution">注意：パルスバイアスセットは、正式SOPの代替ではなく研究ノート用の確認入口として使う。</aside>
+      <p class="manual-note-label">追記欄：</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <h4>4-1. 波形だけ確認する場合</h4>
+      <p class="manual-purpose">目的：SG-4104が正しい波を作っているか確認する。プラズマも試料も使わない。</p>
+      <ul class="manual-checklist">
+        <li>プラズマOFF、LaB6 OFF、メッシュ電圧OFFにする。</li>
+        <li>SG-4104のOUTPUTをHIOKIへつなぐ。</li>
+        <li>SG-4104を3番パルス波、CONT、1.00 Hz、Duty 10%にする。</li>
+        <li>AmplitudeとOffsetを調整し、0 V〜+側だけの波にする。</li>
+        <li>HIOKIで、0 V〜+0.20 V程度のパルスが見えるか確認する。</li>
+        <li>マイナス側へ振れていたら、Offsetを調整する。</li>
+      </ul>
+      <p class="manual-note-label">追記欄：</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <h4>4-2. プローブアンプ出力だけ確認する場合</h4>
+      <p class="manual-purpose">目的：SG-4104の信号がMatsusadaプローブアンプで出力に変わるか確認する。試料にはまだつながない。</p>
+      <ul class="manual-checklist">
+        <li>試料ホルダーへの線を外す。</li>
+        <li>SG-4104 OUTPUTをMatsusadaのVcon-inへつなぐ。</li>
+        <li>Matsusadaの出力+と出力−をHIOKIまたはテスターで見る。</li>
+        <li>MatsusadaのOUTPUTをONにする。</li>
+        <li>SG-4104が0〜+0.20 Vを出している場合、Matsusada後でおよそ0〜+2.4 Vが出るか確認する。</li>
+        <li>0 Vのままなら、OUTPUT許可、Vcon-in、CV/CC、保護状態、BIASつまみを確認する。</li>
+      </ul>
+      <aside class="manual-caution">注意：この確認では試料へつながない。原因探し中に試料を接続しない。</aside>
+      <p class="manual-note-label">追記欄：</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <h4>4-3. 金属ダミーで試す場合</h4>
+      <p class="manual-purpose">目的：1×1 mmの位置に電子が来るか、発熱しないか、安全に確認する。</p>
+      <ul class="manual-checklist">
+        <li>試料ホルダーには金属ダミーを付ける。ダイヤモンドはまだ使わない。</li>
+        <li>前面に見える面積を1×1 mmにする。</li>
+        <li>銅や大きな金属端子を電子側に出さない。</li>
+        <li>プローブアンプ出力+から抵抗を通して試料ホルダーへつなぐ。</li>
+        <li>プローブアンプ出力−をチャンバーGNDへつなぐ。</li>
+        <li>HIOKIで試料ホルダー電圧を見る。</li>
+        <li>HIOKIでもう1チャンネル使える場合は、抵抗の電圧を見る。</li>
+        <li>最初は0〜+3 V、1 Hz、Duty 10%、短時間で確認する。</li>
+        <li>電流、温度、赤熱、変色を確認する。</li>
+      </ul>
+      <p class="manual-note-label">追記欄：</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <h4>4-4. プラズマONで金属ダミーを確認する場合</h4>
+      <p class="manual-purpose">目的：実際のArプラズマ・メッシュ条件で、試料位置に到達する電子量を確認する。</p>
+      <ul class="manual-checklist">
+        <li>プラズマOFFで波形確認が終わっていることを確認する。</li>
+        <li>金属ダミーで0〜+3 Vのパルスが出ることを確認する。</li>
+        <li>Arを入れる。</li>
+        <li>LaB6/プラズマ条件をいつもの手順で立ち上げる。</li>
+        <li>正メッシュを+100 Vにする。</li>
+        <li>試料バイアスを0〜+3 Vパルスで入れる。</li>
+        <li>HIOKIで試料ホルダー電圧と抵抗電圧を見る。</li>
+        <li>異常がなければ短時間だけ記録する。</li>
+        <li>安全なら0〜+5 Vを検討する。</li>
+      </ul>
+      <aside class="manual-caution">注意：金属ダミーで異常がある条件は、ダイヤモンドに使わない。</aside>
+      <p class="manual-note-label">追記欄：</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <h4>4-5. ダイヤモンド本番を行う場合</h4>
+      <p class="manual-purpose">目的：金属ダミーで安全と電子到達を確認した条件だけ、ダイヤモンドへ移す。</p>
+      <ul class="manual-checklist">
+        <li>金属ダミーで使った前面位置と同じ位置に、ダイヤモンドの前面を合わせる。</li>
+        <li>前面に見えるのはダイヤモンド1×1 mmだけにする。</li>
+        <li>固定は側面または裏側で行う。前面に接着剤や金属爪を出さない。</li>
+        <li>最初は0〜+3 V、1 Hz、Duty 10%、10分程度から始める。</li>
+        <li>HIOKIで波形を記録する。</li>
+        <li>ON直後だけ電流が出てすぐ落ちる場合は、帯電を疑い、ON時間を短くする。</li>
+        <li>赤熱、変色、異常発光、温度上昇があれば停止する。</li>
+        <li>安全だった条件だけ、60分、さらに必要なら5時間へ伸ばす。</li>
+      </ul>
+      <p class="manual-note-label">追記欄：</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <h3>5. 電流の見方</h3>
+      <ul class="manual-bullets">
+        <li>HIOKIは電流を直接見ていない。抵抗に出た電圧を見ている。</li>
+        <li>電流は「抵抗にかかった電圧 ÷ 抵抗値」で計算する。</li>
+        <li>10 kΩ抵抗を使っている場合、0.1 Vは10 µA、1 Vは100 µA、10 Vは1 mA、100 Vは10 mA。</li>
+        <li>表示スケールを100にしても、100 Vが出ているという意味ではない。実際の波形の値を見る。</li>
+        <li>抵抗の電圧が大きいほど、試料へ流れた電流が大きい。</li>
+      </ul>
+      <aside class="manual-caution">注意：100 µAを超えたら一度止めて確認する。特にダイヤモンド本番では無理に電流を流さない。</aside>
+      <h3>6. 注意事項</h3>
+      <ul class="manual-bullets">
+        <li>配線作業は、必ずプラズマOFF、LaB6 OFF、メッシュ電圧OFFで行う。</li>
+        <li>試料へつなぐ前に、SG-4104単体、プローブアンプ単体、試料ホルダー電圧の順に確認する。</li>
+        <li>抵抗なしで試料ホルダーへ直接つながない。</li>
+        <li>銅端子を電子が当たる前面に出さない。赤熱・汚染の原因になる。</li>
+        <li>HIOKIの表示上限は電流ではない。単位Vの表示スケール。</li>
+        <li>電源がCC動作に入ったら、その条件は安定した電圧照射ではない。いったん止める。</li>
+        <li>プローブアンプのOUTPUTが反応しない場合は、試料をつながずに本体単体で出力確認する。</li>
+        <li>SG-4104の波が負電圧へ振れていないか、必ず確認する。</li>
+        <li>ダイヤモンドは絶縁体なので、金属ダミーと同じ電流が流れるとは限らない。</li>
+        <li>異常時は、試料バイアス、メッシュ、プラズマの順に安全側へ戻す。</li>
+      </ul>
+      <h3>7. 異常時の止める条件</h3>
+      <ul class="manual-checklist">
+        <li>試料ホルダーや金属部が赤く見えた。</li>
+        <li>銅色・黒色などの汚染が見えた。</li>
+        <li>HIOKIの波形が急に大きくなった。</li>
+        <li>試料電圧が設定より大きく落ちた。</li>
+        <li>抵抗から換算した電流が100 µAを超えた。</li>
+        <li>MatsusadaがCC動作に入った。</li>
+        <li>プラズマの発光が急に変化した。</li>
+        <li>温度が急に上がった。</li>
+        <li>何が起きているか分からなくなった。</li>
+      </ul>
+      <aside class="manual-caution">注意：迷ったら止める。止めてから配線・表示・抵抗値を確認する。</aside>
+      <h3>8. トラブル別の確認</h3>
+      <h4>8-1. OUTPUTを押しても反応しない</h4>
+      <ul class="manual-bullets">
+        <li>SG-4104の波がHIOKIで見えているなら、SG-4104側はだいたいOK。</li>
+        <li>次はMatsusadaの出力+/-を直接測る。</li>
+        <li>Matsusada出力が0 Vのままなら、Vcon-inが有効か、OUTPUTがONか、保護が働いていないか確認する。</li>
+        <li>BIASつまみで手動出力できるか確認すると、本体側の問題か外部入力側の問題か分かれる。</li>
+      </ul>
+      <h4>8-2. 波形はあるが試料に届いていない</h4>
+      <ul class="manual-bullets">
+        <li>プローブアンプ出力+から抵抗までの導通を確認する。</li>
+        <li>抵抗からフィードスルーまでの導通を確認する。</li>
+        <li>フィードスルーから試料ホルダーまでの導通を確認する。</li>
+        <li>試料ホルダーがチャンバーGNDにショートしていないか確認する。</li>
+      </ul>
+      <h4>8-3. 赤波形の縦軸を見やすくしたい</h4>
+      <ul class="manual-bullets">
+        <li>右側のチャンネル番号で赤のチャンネルを選ぶ。</li>
+        <li>赤が小さい場合は、表示上限と表示下限を小さくする。</li>
+        <li>例えば赤が-0.02 V程度なら、表示上限0.05 V、表示下限-0.05 Vくらいにする。</li>
+        <li>表示スケールを大きくしても電流が増えるわけではない。</li>
+      </ul>
+      <h3>9. 実験記録欄</h3>
+      <p>現場で加筆できるように、最低限の記録項目だけ残します。</p>
+      <ul class="manual-checklist">
+        <li>日付：＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</li>
+        <li>試料：金属ダミー / ダイヤモンド / その他＿＿＿＿＿＿</li>
+        <li>SG-4104設定：周波数＿＿＿ Hz、Duty＿＿＿%、Amplitude＿＿＿、Offset＿＿＿</li>
+        <li>パルスバイアスセット確認：SG単体 OK / Matsusada単体 OK / 金属ダミー OK</li>
+        <li>パルス条件：ON＿＿＿ ms、OFF＿＿＿ ms、ピーク電圧＿＿＿ V、Offset＿＿＿ V</li>
+        <li>Matsusada出力確認：最大電圧＿＿＿ V、最小電圧＿＿＿ V</li>
+        <li>HIOKI CH設定：CH1＿＿＿＿＿＿、CH2＿＿＿＿＿＿</li>
+        <li>抵抗値：＿＿＿ Ω</li>
+        <li>抵抗にかかった電圧：＿＿＿ V</li>
+        <li>換算電流：＿＿＿ A / µA / nA</li>
+        <li>Ar圧力：＿＿＿＿＿＿</li>
+        <li>メッシュ電圧：＿＿＿＿＿＿</li>
+        <li>照射時間：＿＿＿＿＿＿</li>
+        <li>異常の有無：＿＿＿＿＿＿</li>
+        <li>PL測定ファイル名：＿＿＿＿＿＿</li>
+      </ul>
+      <p class="manual-note-label">追記欄：</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <p class="manual-write-line">＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿</p>
+      <h3>10. 参考画像</h3>
+      <p>細かい治具の作り方や設置イメージを見直すための画像です。必要な部分だけ加筆して使ってください。</p>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-16.png" alt="パルスバイアスセット参考画像 16" loading="lazy" />
+      </figure>
+      <p class="manual-caption">参考図A　測定回路と停止条件を含む説明図。</p>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-17.png" alt="パルスバイアスセット参考画像 17" loading="lazy" />
+      </figure>
+      <p class="manual-caption">参考図B　水平方向ガンを考慮した装置配置図。</p>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-18.png" alt="パルスバイアスセット参考画像 18" loading="lazy" />
+      </figure>
+      <p class="manual-caption">参考図C　試料部の拡大イメージ。</p>
+      <figure class="manual-figure">
+        <img src="../assets/manual/pulse-bias/image-19.png" alt="パルスバイアスセット参考画像 19" loading="lazy" />
+      </figure>
+      <p class="manual-caption">参考図D　初期検討時の縦方向配置図。実機とは向きが違うため参考扱い。</p>
+    </div>
+  </template>
+
   <script>
     const devices = {
       EBEP: {
@@ -317,6 +808,16 @@
         steps: ['試料位置合わせ', '低倍率または低電流で照射領域を確認', '本照射条件を設定', '照射後の観測へ進む'],
         record: ['電子エネルギー eV/keV', '電流または電流密度', '照射時間と面積', '推定線量', '照射前後のPL変化'],
         note: '低エネルギー電子では炭素空孔を直接作る説明ではなく、既存欠陥複合体の励起・再構成として整理すると筋が通ります。'
+      },
+      'パルスバイアスセット': {
+        tag: 'pulse bias',
+        detailTemplate: 'pulseBiasManualTemplate',
+        summary: 'SG-4104、Matsusadaプローブアンプ、HIOKI、電流制限抵抗、試料ホルダーを一つの確認単位として整理する入口です。',
+        purpose: ['電子照射中に試料側へ0 Vから+3〜+5 V程度の正パルスを入れる', 'ON/OFFと抵抗電圧を記録し、試料へ届く電圧と換算電流を確認する'],
+        before: ['プラズマOFF、LaB6 OFF、メッシュ電圧OFF、Matsusada OUTPUT OFFを確認する', 'SG-4104単体、Matsusada単体、金属ダミーの順に切り分ける', '抵抗値とチャンバーGNDへの戻り道をテスターで確認する'],
+        steps: ['SG-4104を3番パルス波、CONT、1.00 Hz、Duty 10%にする', 'SG-4104 OUTPUTをMatsusadaのVcon-inへ入れる', 'Matsusada出力+から抵抗を通して試料ホルダーへつなぎ、出力-をチャンバーGNDへ戻す', 'HIOKIで試料ホルダー電圧を見て、可能なら抵抗両端の電圧も見る', '金属ダミーで0〜+3 Vから確認し、安全なら+5 Vや照射時間を検討する'],
+        record: ['SG-4104の周波数、Duty、Amplitude、Offset', 'Matsusada後の最大電圧と最小電圧', '抵抗値と抵抗に出た電圧', '換算電流、ON時間、OFF時間', '赤熱、変色、CC動作、プラズマ発光変化の有無'],
+        note: 'これは正式SOPの代替ではなく、研究ノート用の確認入口です。ダイヤモンド本番は金属ダミーで安全と電子到達を確認した条件だけにします。'
       },
       'レーザー顕微鏡': {
         tag: 'optical mapping',
@@ -348,7 +849,24 @@
     };
 
     const memo = document.getElementById('manualMemo');
+    const detail = document.getElementById('deviceDetail');
     let current = 'EBEP';
+
+
+    function renderDetail(data) {
+      detail.innerHTML = '';
+      if (!data.detailTemplate) {
+        detail.hidden = true;
+        return;
+      }
+      const template = document.getElementById(data.detailTemplate);
+      if (!template) {
+        detail.hidden = true;
+        return;
+      }
+      detail.appendChild(template.content.cloneNode(true));
+      detail.hidden = false;
+    }
 
     function fillList(id, items) {
       document.getElementById(id).innerHTML = items.map(item => `<li>${item}</li>`).join('');
@@ -365,6 +883,7 @@
       fillList('before', data.before);
       fillList('steps', data.steps);
       fillList('record', data.record);
+      renderDetail(data);
       document.getElementById('note').textContent = data.note;
       memo.value = localStorage.getItem(`nvDftManualMemo.${name}`) || '';
     }
